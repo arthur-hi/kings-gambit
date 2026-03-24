@@ -1,0 +1,259 @@
+:root {
+  --bg-color: #121212;
+  --text-main: #f5f5f5;
+  --accent-gold: #FFD700;
+  --danger-red: #FF4136;
+  --safe-green: #2ECC40;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  font-family: sans-serif;
+}
+
+/* Phase 3 UI Styles */
+.screen {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Massive buttons */
+.btn-primary {
+  min-height: 60px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  background-color: var(--safe-green);
+  color: #121212;
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  margin-top: auto; /* anchor to bottom */
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-text {
+  background: none;
+  border: none;
+  color: var(--text-main);
+  text-decoration: underline;
+  padding: 15px 0;
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+/* Inputs */
+.top-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+#btn-avatar {
+  font-size: 2.5rem;
+  background: #2a2a2a;
+  border: none;
+  border-radius: 12px;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+#input-name {
+  flex-grow: 1;
+  background: #2a2a2a;
+  border: 2px solid #444;
+  color: white;
+  font-size: 1.5rem;
+  border-radius: 12px;
+  padding: 0 20px;
+  min-height: 80px;
+}
+#input-name:focus {
+  outline: none;
+  border-color: var(--accent-gold);
+}
+
+/* Custom Checkboxes */
+.custom-checkbox-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 20px 20px 20px 60px;
+  margin-bottom: 15px;
+  background: #2a2a2a;
+  border-radius: 12px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  user-select: none;
+}
+.custom-checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+.checkmark {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  height: 30px;
+  width: 30px;
+  background-color: #444;
+  border-radius: 6px;
+}
+.custom-checkbox-container input:checked ~ .checkmark {
+  background-color: var(--safe-green);
+}
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+.custom-checkbox-container input:checked ~ .checkmark:after {
+  display: block;
+}
+.custom-checkbox-container .checkmark:after {
+  left: 10px;
+  top: 4px;
+  width: 8px;
+  height: 16px;
+  border: solid #121212;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg);
+}
+
+.status-row, .boundary-row {
+  margin-bottom: 20px;
+}
+.boundary-row h3 {
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+  color: var(--danger-red);
+}
+
+/* Roster Grid */
+#screen-roster h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: var(--accent-gold);
+  text-align: center;
+}
+#roster-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+.btn-roster-player {
+  background: #2a2a2a;
+  border: 2px solid transparent;
+  color: white;
+  border-radius: 12px;
+  padding: 15px;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  flex: 1 1 calc(50% - 15px);
+  min-height: 70px;
+}
+.btn-roster-player.selected {
+  border-color: var(--safe-green);
+  background: rgba(46, 204, 64, 0.2);
+}
+
+/* Modal Bottom Sheet */
+#modal-emoji {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  max-height: 60vh;
+  background: #222;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+  box-sizing: border-box;
+  overflow-y: auto;
+  z-index: 100;
+}
+#emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 15px;
+}
+.btn-emoji {
+  background: transparent;
+  border: none;
+  font-size: 2.5rem;
+  padding: 10px;
+  cursor: pointer;
+}
+
+/* Modal Refinements */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center;
+  z-index: 1000; padding: 20px;
+}
+.modal-content {
+  background: #2a2a2a; padding: 30px 20px; border-radius: 12px; text-align: center;
+}
+.bottom-sheet-content {
+  background: #222; width: 100%; max-height: 60vh; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 20px 20px 40px; overflow-y: auto; position: absolute; bottom: 0; left: 0; text-align: center;
+}
+.modal-content h3 { margin-bottom: 25px; color: var(--text-main); }
+.btn-secondary {
+  min-height: 60px; width: 100%; border-radius: 12px; font-size: 1.2rem; font-weight: bold;
+  background: transparent; color: var(--text-main); border: 2px solid #444; cursor: pointer;
+}
+
+/* Game HUD */
+#hud { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; height: 10%; }
+#hud-name { font-size: 1.8rem; color: var(--accent-gold); text-transform: uppercase; }
+#hud-treasury { font-size: 2rem; position: relative; cursor: pointer; }
+#treasury-badge {
+  position: absolute; top: -5px; right: -10px; background: var(--danger-red);
+  color: white; font-size: 1rem; font-weight: bold; border-radius: 50%; padding: 2px 8px;
+}
+
+/* Card Display */
+#card-display { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; margin-bottom: 20px; }
+#card-main { background: #e0e0e0; color: #121212; padding: 40px 20px; border-radius: 12px; text-align: center; }
+#card-setup { font-size: 1.2rem; margin-bottom: 10px; opacity: 0.8; }
+#card-action { font-size: 1.8rem; line-height: 1.4; }
+#card-gambit { background: #000; color: var(--accent-gold); padding: 20px; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; margin-top: -10px; text-align: center; border: 2px solid var(--accent-gold); border-top: none; }
+.gambit-reward { margin-top: 10px; font-size: 0.9rem; color: #fff; opacity: 0.8; }
+
+/* Action Zone Buttons */
+#action-zone { height: 35%; display: flex; flex-direction: column; justify-content: flex-end; gap: 15px; }
+.split-buttons { display: flex; gap: 15px; width: 100%; }
+.split-buttons button { flex: 1; }
+.btn-safe { min-height: 70px; background: var(--safe-green); color: #000; font-size: 1.2rem; font-weight: bold; border-radius: 12px; border: none; cursor: pointer; }
+.btn-danger { min-height: 70px; background: var(--danger-red); color: #fff; font-size: 1.2rem; font-weight: bold; border-radius: 12px; border: none; cursor: pointer; }
+.btn-gold { min-height: 70px; background: var(--accent-gold); color: #000; font-size: 1.2rem; font-weight: bold; border-radius: 12px; border: none; cursor: pointer; width: 100%; }

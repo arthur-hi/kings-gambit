@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>King's Gambit</title>
+  <meta name="theme-color" content="#121212">
+  <style>
+    body { background-color: #121212; }
+  </style>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app-container">
+    <!-- Screen 1: Roster -->
+    <div id="screen-roster" class="screen active">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0;">Who's Playing?</h2>
+        <div style="display: flex; gap: 10px;">
+          <button id="btn-settings" class="btn-secondary" style="min-height: 40px; width: auto; padding: 5px 15px; font-size: 1.5rem; border: none;">⚙️</button>
+        </div>
+      </div>
+      <div id="roster-grid"></div>
+      <button id="btn-continue-roster" class="btn-primary">Continue ➡️</button>
+    </div>
+
+    <!-- Screen 2: Pass Around -->
+    <div id="screen-pass-around" class="screen hidden">
+      <button id="btn-done-passing" class="btn-text">Done Passing (Start Game)</button>
+      
+      <div class="top-row">
+        <button id="btn-avatar">👤</button>
+        <input type="text" id="input-name" placeholder="Enter Name..." enterkeyhint="done">
+      </div>
+      
+      <div class="status-row">
+        <label class="custom-checkbox-container">
+          Single & Ready to Mingle?
+          <input type="checkbox" id="cb-single" checked>
+          <span class="checkmark"></span>
+        </label>
+      </div>
+      
+      <div class="boundary-row">
+        <h3>I refuse to do anything:</h3>
+        <label class="custom-checkbox-container">
+          Messy
+          <input type="checkbox" id="cb-messy">
+          <span class="checkmark"></span>
+        </label>
+        <label class="custom-checkbox-container">
+          Active
+          <input type="checkbox" id="cb-active">
+          <span class="checkmark"></span>
+        </label>
+        <label class="custom-checkbox-container">
+          Spicy
+          <input type="checkbox" id="cb-spicy">
+          <span class="checkmark"></span>
+        </label>
+      </div>
+
+      <button id="btn-im-in" class="btn-primary">I'm In (Pass Phone) ➡️</button>
+    </div>
+
+    <!-- Modal: Alert -->
+    <div id="modal-alert" class="modal-overlay hidden">
+      <div class="modal-content">
+        <h3 id="modal-alert-text">Message</h3>
+        <button id="btn-alert-ok" class="btn-primary">OK</button>
+      </div>
+    </div>
+
+    <!-- Modal: New Players Confirmation -->
+    <div id="modal-new-players" class="modal-overlay hidden">
+      <div class="modal-content">
+        <h3>Is there anyone new playing tonight?</h3>
+        <button id="btn-yes-new" class="btn-primary" style="margin-bottom: 15px;">Yes, Pass Phone</button>
+        <button id="btn-no-new" class="btn-secondary">No, Start Game</button>
+      </div>
+    </div>
+
+    <!-- Modal: Emoji -->
+    <div id="modal-emoji" class="modal hidden">
+      <div id="emoji-grid"></div>
+    </div>
+
+    <!-- Modal: Treasury -->
+    <div id="modal-treasury" class="modal-overlay hidden">
+      <div class="bottom-sheet-content">
+        <h3 style="margin-bottom: 20px; color: var(--accent-gold);">Your Treasury</h3>
+        <div id="treasury-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;"></div>
+        <button id="btn-close-treasury" class="btn-secondary">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Modal: Target Selector -->
+    <div id="modal-target-selector" class="modal-overlay hidden">
+      <div class="bottom-sheet-content">
+        <h3 id="target-selector-title" style="margin-bottom: 20px; color: var(--accent-gold);">Select Target</h3>
+        <div id="target-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;"></div>
+        <button id="btn-close-targets" class="btn-secondary">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Modal: Shield Trigger -->
+    <div id="modal-shield" class="modal-overlay hidden">
+      <div class="modal-content">
+        <h3 id="shield-message">Incoming Attack!</h3>
+        <button id="btn-use-shield" class="btn-primary" style="margin-bottom: 15px;">🛡️ Use Shield</button>
+        <button id="btn-accept-fate" class="btn-secondary">Accept Fate</button>
+      </div>
+    </div>
+
+    <!-- Modal: Settings -->
+    <div id="modal-settings" class="modal-overlay hidden">
+      <div class="bottom-sheet-content">
+        <h3 style="margin-bottom: 20px; color: var(--accent-gold);">Settings</h3>
+        <button id="btn-refresh-pool" class="btn-secondary" style="margin-bottom: 20px;">🔄 Reload Default Cards</button>
+        <label class="custom-checkbox-container" style="margin-bottom: 20px; text-align: left;">
+          Verbose Logging
+          <input type="checkbox" id="cb-verbose-logs">
+          <span class="checkmark"></span>
+        </label>
+        <button id="btn-close-settings" class="btn-primary">Close</button>
+      </div>
+    </div>
+
+    <!-- Screen 3: The Game Board -->
+    <div id="screen-game" class="screen hidden">
+      <div id="hud">
+        <h2 id="hud-name">PLAYER'S TURN</h2>
+        <div style="display: flex; gap: 15px;">
+          <div id="hud-pause" style="font-size: 2rem; cursor: pointer;">⏸️</div>
+          <div id="hud-treasury">👑 <span id="treasury-badge" class="hidden">0</span></div>
+        </div>
+      </div>
+      
+      <div id="card-display">
+        <div id="card-main">
+          <p id="card-setup"></p>
+          <h2 id="card-action"></h2>
+        </div>
+        <div id="card-gambit" class="hidden">
+          <p><strong>GAMBIT:</strong> <span id="gambit-text"></span></p>
+          <p class="gambit-reward">Reward: <span id="gambit-reward-text"></span></p>
+        </div>
+      </div>
+
+      <div id="action-zone">
+        <button id="btn-did-gambit" class="btn-gold hidden">👑 Did the Gambit</button>
+        <div id="split-buttons" class="split-buttons">
+          <button id="btn-nailed-it" class="btn-safe">✅ Nailed It</button>
+          <button id="btn-failed" class="btn-danger">🍺 Failed (Drink)</button>
+        </div>
+        <button id="btn-done-rule" class="btn-safe hidden">✅ Done</button>
+      </div>
+    </div>
+
+    <!-- Screen 4: Smoke Break / Pause -->
+    <div id="screen-pause" class="screen hidden">
+      <h2 style="color: var(--accent-gold); text-align: center; margin-bottom: 20px;">SMOKE BREAK</h2>
+      <h3 style="margin-bottom: 15px;">Active Players:</h3>
+      <div id="pause-roster-list" style="flex-grow: 1; overflow-y: auto;"></div>
+      <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+        <button id="btn-resume-game" class="btn-primary">▶️ Resume Game</button>
+        <button id="btn-end-game" class="btn-danger" style="min-height: 60px; font-size: 1.2rem; font-weight: bold; border-radius: 12px; border: none; cursor: pointer;">🛑 End Session</button>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
