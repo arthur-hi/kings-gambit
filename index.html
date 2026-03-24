@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>King's Gambit</title>
   <meta name="theme-color" content="#121212">
   <style>
-    body { background-color: #121212; }
+    body {
+      background-color: #121212;
+    }
   </style>
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
   <div id="app-container">
     <!-- Screen 1: Roster -->
@@ -17,7 +21,8 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2 style="margin: 0;">Who's Playing?</h2>
         <div style="display: flex; gap: 10px;">
-          <button id="btn-settings" class="btn-secondary" style="min-height: 40px; width: auto; padding: 5px 15px; font-size: 1.5rem; border: none;">⚙️</button>
+          <button id="btn-settings" class="btn-secondary"
+            style="min-height: 40px; width: auto; padding: 5px 15px; font-size: 1.5rem; border: none;">⚙️</button>
         </div>
       </div>
       <div id="roster-grid"></div>
@@ -27,20 +32,20 @@
     <!-- Screen 2: Pass Around -->
     <div id="screen-pass-around" class="screen hidden">
       <button id="btn-done-passing" class="btn-text">Done Passing (Start Game)</button>
-      
+
       <div class="top-row">
         <button id="btn-avatar">👤</button>
         <input type="text" id="input-name" placeholder="Enter Name..." enterkeyhint="done">
       </div>
-      
+
       <div class="status-row">
         <label class="custom-checkbox-container">
-          Single & Ready to Mingle?
+          Use loose questions?
           <input type="checkbox" id="cb-single" checked>
           <span class="checkmark"></span>
         </label>
       </div>
-      
+
       <div class="boundary-row">
         <h3>I refuse to do anything:</h3>
         <label class="custom-checkbox-container">
@@ -116,7 +121,8 @@
     <div id="modal-settings" class="modal-overlay hidden">
       <div class="bottom-sheet-content">
         <h3 style="margin-bottom: 20px; color: var(--accent-gold);">Settings</h3>
-        <button id="btn-refresh-pool" class="btn-secondary" style="margin-bottom: 20px;">🔄 Reload Default Cards</button>
+        <button id="btn-refresh-pool" class="btn-secondary" style="margin-bottom: 20px;">🔄 Reload Default
+          Cards</button>
         <label class="custom-checkbox-container" style="margin-bottom: 20px; text-align: left;">
           Verbose Logging
           <input type="checkbox" id="cb-verbose-logs">
@@ -135,7 +141,7 @@
           <div id="hud-treasury">👑 <span id="treasury-badge" class="hidden">0</span></div>
         </div>
       </div>
-      
+
       <div id="card-display">
         <div id="card-main">
           <p id="card-setup"></p>
@@ -164,10 +170,13 @@
       <div id="pause-roster-list" style="flex-grow: 1; overflow-y: auto;"></div>
       <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
         <button id="btn-resume-game" class="btn-primary">▶️ Resume Game</button>
-        <button id="btn-end-game" class="btn-danger" style="min-height: 60px; font-size: 1.2rem; font-weight: bold; border-radius: 12px; border: none; cursor: pointer;">🛑 End Session</button>
+        <button id="btn-end-game" class="btn-danger"
+          style="min-height: 60px; font-size: 1.2rem; font-weight: bold; border-radius: 12px; border: none; cursor: pointer;">🛑
+          End Session</button>
       </div>
     </div>
   </div>
   <script src="app.js"></script>
 </body>
+
 </html>

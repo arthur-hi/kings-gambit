@@ -11,21 +11,20 @@ const DEFAULT_GAME_DATA = {
     { id: 'S_008', text: 'Without standing up from the garden bench,', required_tags: ['solo'] },
     { id: 'S_009', text: 'Before the next person heads out for a smoke,', required_tags: ['solo'] },
     { id: 'S_010', text: 'If you are single, look at {target} and', required_tags: ['needs-target', 'single'] },
-    { id: 'S_011', text: 'In your best King & Queen pub quiz master voice,', required_tags: [] },
-    { id: 'S_012', text: 'While maintaining unblinking eye contact with {target},', required_tags: ['needs-target'] },
-    { id: 'S_013', text: 'If you\'ve ever been sick at the girls\' house, stand up and', required_tags: ['solo'] },
-    { id: 'S_014', text: 'Lock eyes with the person you\'d least like to be stuck in a house with ({target}), and', required_tags: ['needs-target'] },
-    { id: 'S_015', text: 'If you\'re currently the most sober person on this bench,', required_tags: ['solo'] },
-    { id: 'S_016', text: 'Turn to {target}, take a deep breath, and', required_tags: ['needs-target'] },
-    { id: 'S_017', text: 'Everyone who isn\'t currently wearing a coat must watch as you and {target}', required_tags: ['needs-target'] },
-    { id: 'S_018', text: 'If the hard liquor has already come out, grab {target} and', required_tags: ['needs-target'] },
-    { id: 'S_019', text: 'Stand on your chair, point at {target}, and loudly', required_tags: ['needs-target'] },
-    { id: 'S_020', text: 'To prove you are happily single, grab {target} and', required_tags: ['needs-target', 'single'] },
-    { id: 'S_021', text: 'After your next sip of beer, you must', required_tags: ['solo'] },
-    { id: 'S_022', text: 'Assuming {target} is the \'Captain\' for this turn, you must', required_tags: ['needs-target'] },
-    { id: 'S_023', text: 'If you\'re in the garden, find a way to', required_tags: ['solo'] },
-    { id: 'S_024', text: 'Lean into {target}\'s ear and', required_tags: ['needs-target'] },
-    { id: 'S_025', text: 'Hand your drink to the most \'active\' person tonight ({target}), and', required_tags: ['needs-target'] }
+    { id: 'S_011', text: 'While maintaining unblinking eye contact with {target},', required_tags: ['needs-target'] },
+    { id: 'S_012', text: 'If you\'ve ever been sick at the girls\' house, stand up and', required_tags: ['solo'] },
+    { id: 'S_013', text: 'Lock eyes with the person you\'d least like to be stuck in a house with ({target}), and', required_tags: ['needs-target'] },
+    { id: 'S_014', text: 'If you\'re currently the most sober person on this bench,', required_tags: ['solo'] },
+    { id: 'S_015', text: 'Turn to {target}, take a deep breath, and', required_tags: ['needs-target'] },
+    { id: 'S_016', text: 'Everyone who isn\'t currently wearing a coat must watch as you and {target}', required_tags: ['needs-target'] },
+    { id: 'S_017', text: 'If the hard liquor has already come out, grab {target} and', required_tags: ['needs-target'] },
+    { id: 'S_018', text: 'Stand on your chair, point at {target}, and loudly', required_tags: ['needs-target'] },
+    { id: 'S_019', text: 'To prove you are happily single, grab {target} and', required_tags: ['needs-target', 'single'] },
+    { id: 'S_020', text: 'After your next sip of beer, you must', required_tags: ['solo'] },
+    { id: 'S_021', text: 'Assuming {target} is the \'Captain\' for this turn, you must', required_tags: ['needs-target'] },
+    { id: 'S_022', text: 'If you\'re in the garden, find a way to', required_tags: ['solo'] },
+    { id: 'S_023', text: 'Lean into {target}\'s ear and', required_tags: ['needs-target'] },
+    { id: 'S_024', text: 'Hand your drink to the most \'active\' person tonight ({target}), and', required_tags: ['needs-target'] }
   ],
 
   "actions": [
@@ -76,7 +75,7 @@ const DEFAULT_GAME_DATA = {
       "text": "act like a commentator for the next two turns, narrating everything {target} does.",
       "tags": ["needs-target", "active"],
       "type": "challenge",
-      "gambit": { "text": "Do the commentary in a high-pitched voice without breaking character.", "reward_type": "solo", "power_up": "Shield" }
+      "gambit": { "text": "You must also loudly applaud and cheer every single time {target} takes a sip of their drink.", "reward_type": "solo", "power_up": "Shield" }
     },
     {
       "id": "A_008",
@@ -104,14 +103,14 @@ const DEFAULT_GAME_DATA = {
       "text": "call out {target} for a 'bad take' they've had recently.",
       "tags": ["needs-target", "chill", "stray"],
       "type": "challenge",
-      "gambit": { "text": "Allow {target} to counter-roast you for 30 seconds without you being allowed to speak.", "reward_type": "solo", "power_up": "Re-roll" }
+      "gambit": { "text": "Allow {target} exactly one brutal counter-roast without you being allowed to reply.", "reward_type": "solo", "power_up": "Re-roll" }
     },
     {
       "id": "A_012",
       "text": "take a 'recovery' shot of a spirit of your choice.",
       "tags": ["solo", "messy"],
       "type": "rule",
-      "gambit": { "text": "Take the shot while {target} pours a glass of water over your head.", "reward_type": "solo", "power_up": "Burden" }
+      "gambit": { "text": "Take the shot without making any facial expression, flinching, or making a sound.", "reward_type": "solo", "power_up": "Burden" }
     },
     {
       "id": "A_013",
