@@ -2,27 +2,23 @@ const DEFAULT_GAME_DATA = {
 
   setups: [
     { id: 'S_001', text: 'Look directly at {target} and', required_tags: ['needs-target'] },
-    { id: 'S_002', text: 'You and {target} must', required_tags: ['needs-target'] },
     { id: 'S_003', text: 'Since you\'ve been quiet,', required_tags: ['solo'] },
     { id: 'S_004', text: 'Point at {target} and', required_tags: ['needs-target'] },
-    { id: 'S_005', text: 'Raise a glass to the person most likely to catch a stray right now ({target}), and', required_tags: ['needs-target'] },
-    { id: 'S_006', text: 'For the next two rounds, you and {target} must', required_tags: ['needs-target'] },
-    { id: 'S_007', text: 'Identify the person who needs a \'good recovery\' the most ({target}) and', required_tags: ['needs-target'] },
-    { id: 'S_008', text: 'Without standing up from the garden bench,', required_tags: ['solo'] },
+    { id: 'S_005', text: 'Raise a glass to the person most likely to {target}, and', required_tags: ['needs-target'] },
+    { id: 'S_007', text: 'Bark at {target} and', required_tags: ['needs-target'] },
     { id: 'S_009', text: 'Before the next person heads out for a smoke,', required_tags: ['solo'] },
-    { id: 'S_010', text: 'If you are single, look at {target} and', required_tags: ['needs-target', 'single'] },
+    { id: 'S_010', text: 'Bite your lip while looking at {target} and', required_tags: ['needs-target', 'single'] },
     { id: 'S_011', text: 'While maintaining unblinking eye contact with {target},', required_tags: ['needs-target'] },
     { id: 'S_012', text: 'If you\'ve ever been sick at the girls\' house, stand up and', required_tags: ['solo'] },
-    { id: 'S_013', text: 'Lock eyes with the person you\'d least like to be stuck in a house with ({target}), and', required_tags: ['needs-target'] },
-    { id: 'S_014', text: 'If you\'re currently the most sober person on this bench,', required_tags: ['solo'] },
+    { id: 'S_013', text: 'Lock eyes with {target} and', required_tags: ['needs-target'] },
+    { id: 'S_014', text: 'If you\'re currently the most sober person,', required_tags: ['solo'] },
     { id: 'S_015', text: 'Turn to {target}, take a deep breath, and', required_tags: ['needs-target'] },
-    { id: 'S_016', text: 'Everyone who isn\'t currently wearing a coat must watch as you and {target}', required_tags: ['needs-target'] },
+    { id: 'S_016', text: 'Everyone must watch as you and {target}', required_tags: ['needs-target'] },
     { id: 'S_017', text: 'If the hard liquor has already come out, grab {target} and', required_tags: ['needs-target'] },
     { id: 'S_018', text: 'Stand on your chair, point at {target}, and loudly', required_tags: ['needs-target'] },
     { id: 'S_019', text: 'To prove you are happily single, grab {target} and', required_tags: ['needs-target', 'single'] },
     { id: 'S_020', text: 'After your next sip of beer, you must', required_tags: ['solo'] },
     { id: 'S_021', text: 'Assuming {target} is the \'Captain\' for this turn, you must', required_tags: ['needs-target'] },
-    { id: 'S_022', text: 'If you\'re in the garden, find a way to', required_tags: ['solo'] },
     { id: 'S_023', text: 'Lean into {target}\'s ear and', required_tags: ['needs-target'] },
     { id: 'S_024', text: 'Hand your drink to the most \'active\' person tonight ({target}), and', required_tags: ['needs-target'] }
   ],
@@ -51,7 +47,7 @@ const DEFAULT_GAME_DATA = {
     },
     {
       "id": "A_004",
-      "text": "explain the exact moment you realized {target} was a total 'good recovery' liability.",
+      "text": "explain the exact moment you realized {target} was a total liability.",
       "tags": ["needs-target", "chill", "stray"],
       "type": "challenge",
       "gambit": { "text": "Let {target} scroll through your 'Hidden' photo album for 10 seconds.", "reward_type": "solo", "power_up": "Burden" }
@@ -65,7 +61,7 @@ const DEFAULT_GAME_DATA = {
     },
     {
       "id": "A_006",
-      "text": "give {target} your best 'pick-up line' you’ve actually used in Brighton.",
+      "text": "give {target} your best 'pick-up line' you’ve actually used.",
       "tags": ["needs-target", "chill", "spicy", "single"],
       "type": "challenge",
       "gambit": { "text": "Let {target} reply to your last Tinder/Hinge match with whatever they want.", "reward_type": "solo", "power_up": "Pass" }
@@ -96,7 +92,7 @@ const DEFAULT_GAME_DATA = {
       "text": "reveal your most embarrassing 'drunk purchase'.",
       "tags": ["solo", "chill"],
       "type": "challenge",
-      "gambit": { "text": "Show the group your bank statement/app from the last time you were at the girls' house.", "reward_type": "solo", "power_up": "Shield" }
+      "gambit": null
     },
     {
       "id": "A_011",
@@ -138,21 +134,7 @@ const DEFAULT_GAME_DATA = {
       "text": "tell {target} what you actually thought of them when you first met.",
       "tags": ["needs-target", "chill", "stray"],
       "type": "challenge",
-      "gambit": { "text": "If it's mean, you take a drink. If it's nice, {target} takes a drink.", "reward_type": "solo", "power_up": "Shield" }
-    },
-    {
-      "id": "A_017",
-      "text": "text your most recent 'ex' something confusing (Group decides the text).",
-      "tags": ["solo", "chill", "spicy", "single"],
-      "type": "challenge",
-      "gambit": { "text": "Wait for a reply. If they reply within 5 minutes, everyone else drinks.", "reward_type": "solo", "power_up": "Pass" }
-    },
-    {
-      "id": "A_018",
-      "text": "go outside and shout 'I love Brighton!' at the top of your lungs.",
-      "tags": ["solo", "active"],
-      "type": "challenge",
-      "gambit": { "text": "Do it while carrying {target} on your back.", "reward_type": "mutual", "power_up": "Burden" }
+      "gambit": null
     },
     {
       "id": "A_019",
@@ -160,13 +142,6 @@ const DEFAULT_GAME_DATA = {
       "tags": ["solo", "chill"],
       "type": "challenge",
       "gambit": { "text": "Do it while the other houses aggressively heckle you.", "reward_type": "solo", "power_up": "Re-roll" }
-    },
-    {
-      "id": "A_020",
-      "text": "try to guess {target}'s current phone passcode.",
-      "tags": ["needs-target", "chill"],
-      "type": "challenge",
-      "gambit": { "text": "If you get it right, you get to send one tweet/post from their account.", "reward_type": "solo", "power_up": "Pass" }
     }
   ]
 
