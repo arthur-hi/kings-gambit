@@ -4,7 +4,6 @@ const DEFAULT_GAME_DATA = {
     { id: 'S_001', text: 'Look directly at {target} and', required_tags: ['needs-target'] },
     { id: 'S_003', text: 'Since you\'ve been quiet,', required_tags: ['solo'] },
     { id: 'S_004', text: 'Point at {target} and', required_tags: ['needs-target'] },
-    { id: 'S_005', text: 'Raise a glass to the person most likely to {target}, and', required_tags: ['needs-target'] },
     { id: 'S_007', text: 'Bark at {target} and', required_tags: ['needs-target'] },
     { id: 'S_009', text: 'Before the next person heads out for a smoke,', required_tags: ['solo'] },
     { id: 'S_010', text: 'Bite your lip while looking at {target} and', required_tags: ['needs-target', 'single'] },
@@ -13,13 +12,11 @@ const DEFAULT_GAME_DATA = {
     { id: 'S_013', text: 'Lock eyes with {target} and', required_tags: ['needs-target'] },
     { id: 'S_014', text: 'If you\'re currently the most sober person,', required_tags: ['solo'] },
     { id: 'S_015', text: 'Turn to {target}, take a deep breath, and', required_tags: ['needs-target'] },
-    { id: 'S_016', text: 'Everyone must watch as you and {target}', required_tags: ['needs-target'] },
     { id: 'S_017', text: 'If the hard liquor has already come out, grab {target} and', required_tags: ['needs-target'] },
     { id: 'S_018', text: 'Stand on your chair, point at {target}, and loudly', required_tags: ['needs-target'] },
     { id: 'S_019', text: 'To prove you are happily single, grab {target} and', required_tags: ['needs-target', 'single'] },
     { id: 'S_020', text: 'After your next sip of beer, you must', required_tags: ['solo'] },
     { id: 'S_021', text: 'Assuming {target} is the \'Captain\' for this turn, you must', required_tags: ['needs-target'] },
-    { id: 'S_023', text: 'Lean into {target}\'s ear and', required_tags: ['needs-target'] },
     { id: 'S_024', text: 'Hand your drink to the most \'active\' person tonight ({target}), and', required_tags: ['needs-target'] }
   ],
 
@@ -50,7 +47,7 @@ const DEFAULT_GAME_DATA = {
       "text": "explain the exact moment you realized {target} was a total liability.",
       "tags": ["needs-target", "chill", "stray"],
       "type": "challenge",
-      "gambit": { "text": "Let {target} scroll through your 'Hidden' photo album for 10 seconds.", "reward_type": "solo", "power_up": "Burden" }
+      "gambit": null
     },
     {
       "id": "A_005",
@@ -64,7 +61,7 @@ const DEFAULT_GAME_DATA = {
       "text": "give {target} your best 'pick-up line' you’ve actually used.",
       "tags": ["needs-target", "chill", "spicy", "single"],
       "type": "challenge",
-      "gambit": { "text": "Let {target} reply to your last Tinder/Hinge match with whatever they want.", "reward_type": "solo", "power_up": "Pass" }
+      "gambit": null
     },
     {
       "id": "A_007",
@@ -113,7 +110,7 @@ const DEFAULT_GAME_DATA = {
       "text": "sit on the floor for the next three turns.",
       "tags": ["solo", "active"],
       "type": "rule",
-      "gambit": { "text": "{target} also sits on the floor. You both earn a Power-Up.", "reward_type": "mutual", "power_up": "Shield" }
+      "gambit": null
     },
     {
       "id": "A_014",
@@ -123,31 +120,34 @@ const DEFAULT_GAME_DATA = {
       "gambit": { "text": "The singles get to choose one person for you to take a shot with.", "reward_type": "solo", "power_up": "Re-roll" }
     },
     {
-      "id": "A_015",
-      "text": "make everyone who has ever been sick at the girls' house take a drink.",
-      "tags": ["solo", "messy", "stray"],
-      "type": "rule",
-      "gambit": { "text": "The person who was sick most recently takes a shot of straight spirit.", "reward_type": "solo", "power_up": "Pass" }
-    },
-    {
       "id": "A_016",
       "text": "tell {target} what you actually thought of them when you first met.",
       "tags": ["needs-target", "chill", "stray"],
       "type": "challenge",
       "gambit": null
-    },
-    {
-      "id": "A_019",
-      "text": "give a 1-minute 'TED Talk' on why your house is better than the others.",
-      "tags": ["solo", "chill"],
-      "type": "challenge",
-      "gambit": { "text": "Do it while the other houses aggressively heckle you.", "reward_type": "solo", "power_up": "Re-roll" }
     }
   ]
 
 };
 
 let currentHeatScore = 0;
+
+let wakeLock = null;
+const requestWakeLock = async () => {
+  try {
+    if ('wakeLock' in navigator && wakeLock === null) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      logVerbose("Wake Lock active.");
+    }
+  } catch (err) {
+    console.error("Wake Lock failed:", err);
+  }
+};
+document.addEventListener('click', () => {
+  if (document.getElementById('screen-game') && !document.getElementById('screen-game').classList.contains('hidden')) {
+    requestWakeLock();
+  }
+});
 
 function updateHeatScore(actionType) {
   switch (actionType) {
@@ -242,24 +242,35 @@ function generateCard(playerName, activePlayerNames) {
   if (!dataStr) return null;
   const gameData = JSON.parse(dataStr);
 
-  const validCombinations = [];
+  const buildCombinations = (useHeatScore) => {
+    let combos = [];
+    for (const setup of gameData.setups) {
+      for (const action of gameData.actions) {
+        if (!setup.required_tags || !action.tags) continue;
+        const hasRequiredTags = setup.required_tags.every(tag => action.tags.includes(tag));
+        if (!hasRequiredTags) continue;
+        const hasBoundaryTag = action.tags.some(tag => currentPlayer.boundaries && currentPlayer.boundaries.includes(tag));
+        if (hasBoundaryTag) continue;
 
-  for (const setup of gameData.setups) {
-    for (const action of gameData.actions) {
-      if (!setup.required_tags || !action.tags) continue;
+        if (useHeatScore) {
+          if (currentHeatScore < 30 && (action.tags.includes('messy') || action.tags.includes('active'))) continue;
+          if (currentHeatScore >= 70 && action.tags.includes('chill')) continue;
+        }
 
-      const hasRequiredTags = setup.required_tags.every(tag => action.tags.includes(tag));
-      if (!hasRequiredTags) continue;
+        const combinedId = `${setup.id}+${action.id}`;
+        const isInHistory = currentPlayer.history && currentPlayer.history.includes(combinedId);
+        if (isInHistory) continue;
 
-      const hasBoundaryTag = action.tags.some(tag => currentPlayer.boundaries && currentPlayer.boundaries.includes(tag));
-      if (hasBoundaryTag) continue;
-
-      const combinedId = `${setup.id}+${action.id}`;
-      const isInHistory = currentPlayer.history && currentPlayer.history.includes(combinedId);
-      if (isInHistory) continue;
-
-      validCombinations.push({ setup, action });
+        combos.push({ setup, action });
+      }
     }
+    return combos;
+  };
+
+  let validCombinations = buildCombinations(true);
+  if (validCombinations.length === 0) {
+    logVerbose("Heat Score too restrictive. Falling back to normal rules.");
+    validCombinations = buildCombinations(false);
   }
 
   logVerbose(`Found ${validCombinations.length} valid combinations for ${playerName}`);
@@ -556,6 +567,14 @@ function playNextTurn() {
 
   const currentPlayerName = session.activePlayers[session.turnIndex % session.activePlayers.length];
   hudName.innerText = `${currentPlayerName}'S TURN`;
+  
+  const nextPlayerName = session.activePlayers[(session.turnIndex + 1) % session.activePlayers.length];
+  const hudUpNext = document.getElementById('hud-up-next');
+  if (hudUpNext) hudUpNext.innerText = `UP NEXT: ${nextPlayerName}`;
+
+  const roundNumber = Math.floor(session.turnIndex / session.activePlayers.length) + 1;
+  const hudRound = document.getElementById('hud-round');
+  if (hudRound) hudRound.innerText = `ROUND ${roundNumber}`;
 
   currentCard = generateCard(currentPlayerName, session.activePlayers);
   if (!currentCard) {
@@ -577,7 +596,7 @@ function playNextTurn() {
     btnDoneRule.classList.add('hidden');
   }
 
-  if (currentCard.gambit) {
+  if (currentCard.gambit && roundNumber > 1) {
     cardGambit.classList.remove('hidden');
     btnDidGambit.classList.remove('hidden');
     gambitText.innerText = currentCard.gambit.text;
@@ -768,8 +787,19 @@ function applyPowerUpEffect(type, victimName, attackerName) {
 if (document.getElementById('btn-close-treasury')) document.getElementById('btn-close-treasury').addEventListener('click', () => modalTreasury.classList.add('hidden'));
 if (document.getElementById('btn-close-targets')) document.getElementById('btn-close-targets').addEventListener('click', () => modalTargetSelector.classList.add('hidden'));
 
+function saveSnapshot() {
+  const snap = {
+    heatScore: currentHeatScore,
+    roster: loadRoster(),
+    session: loadSession(),
+    card: currentCard
+  };
+  localStorage.setItem('kings_gambit_snapshot', JSON.stringify(snap));
+}
+
 function handleTurnResult(resultType) {
   if (!currentCard) return;
+  saveSnapshot();
 
   logVerbose(`Turn resolved with result: ${resultType}`);
   updateHeatScore(resultType);
@@ -826,9 +856,28 @@ function renderPauseScreen() {
     row.style.padding = '15px';
     row.style.borderRadius = '12px';
 
+    const nameWrap = document.createElement('div');
+    nameWrap.style.display = 'flex';
+    nameWrap.style.alignItems = 'center';
+    nameWrap.style.gap = '10px';
+
     const nameEl = document.createElement('span');
     nameEl.style.fontSize = '1.2rem';
     nameEl.innerText = playerName;
+
+    const btnEdit = document.createElement('button');
+    btnEdit.innerText = '⚙️';
+    btnEdit.style.background = 'transparent';
+    btnEdit.style.border = 'none';
+    btnEdit.style.fontSize = '1.2rem';
+    btnEdit.style.cursor = 'pointer';
+    
+    btnEdit.addEventListener('click', () => {
+      openEditProfile(playerName);
+    });
+
+    nameWrap.appendChild(nameEl);
+    nameWrap.appendChild(btnEdit);
 
     const btnBed = document.createElement('button');
     btnBed.className = 'btn-danger';
@@ -848,7 +897,7 @@ function renderPauseScreen() {
       }
     });
 
-    row.appendChild(nameEl);
+    row.appendChild(nameWrap);
     row.appendChild(btnBed);
     pauseRosterList.appendChild(row);
   });
@@ -877,4 +926,88 @@ function initGame() {
   }
 }
 
+const modalEditProfile = document.getElementById('modal-edit-profile');
+const editProfileName = document.getElementById('edit-profile-name');
+const editCbSingle = document.getElementById('edit-cb-single');
+const editCbMessy = document.getElementById('edit-cb-messy');
+const editCbActive = document.getElementById('edit-cb-active');
+const editCbSpicy = document.getElementById('edit-cb-spicy');
+const btnSaveProfile = document.getElementById('btn-save-profile');
+const btnCancelProfile = document.getElementById('btn-cancel-profile');
+
+let playerBeingEdited = null;
+
+function openEditProfile(playerName) {
+  const roster = loadRoster();
+  const player = roster.find(p => p.name === playerName);
+  if (!player) return;
+  
+  playerBeingEdited = playerName;
+  editProfileName.innerText = `Edit ${playerName}`;
+  editCbSingle.checked = player.is_single;
+  editCbMessy.checked = player.boundaries && player.boundaries.includes('messy');
+  editCbActive.checked = player.boundaries && player.boundaries.includes('active');
+  editCbSpicy.checked = player.boundaries && player.boundaries.includes('spicy');
+  
+  modalEditProfile.classList.remove('hidden');
+}
+
+if (btnCancelProfile) {
+  btnCancelProfile.addEventListener('click', () => {
+    modalEditProfile.classList.add('hidden');
+  });
+}
+
+if (btnSaveProfile) {
+  btnSaveProfile.addEventListener('click', () => {
+    if (!playerBeingEdited) return;
+    const roster = loadRoster();
+    const playerIndex = roster.findIndex(p => p.name === playerBeingEdited);
+    if (playerIndex >= 0) {
+      roster[playerIndex].is_single = editCbSingle.checked;
+      const b = [];
+      if (editCbMessy.checked) b.push('messy');
+      if (editCbActive.checked) b.push('active');
+      if (editCbSpicy.checked) b.push('spicy');
+      roster[playerIndex].boundaries = b;
+      
+      savePlayerToRoster(roster[playerIndex]);
+      logVerbose(`Updated profile for ${playerBeingEdited}`);
+    }
+    modalEditProfile.classList.add('hidden');
+  });
+}
+
 initGame();
+
+const btnUndoTurn = document.getElementById('btn-undo-turn');
+if (btnUndoTurn) {
+  btnUndoTurn.addEventListener('click', () => {
+    const snapStr = localStorage.getItem('kings_gambit_snapshot');
+    if (!snapStr) return showAlert("Nothing to undo!");
+    
+    const snap = JSON.parse(snapStr);
+    currentHeatScore = snap.heatScore;
+    localStorage.setItem('kings_gambit_roster', JSON.stringify(snap.roster));
+    localStorage.setItem('kings_gambit_current_session', JSON.stringify(snap.session));
+    currentCard = snap.card;
+    
+    const currentPlayerName = snap.session.activePlayers[snap.session.turnIndex % snap.session.activePlayers.length];
+    hudName.innerText = `${currentPlayerName}'S TURN`;
+    
+    const nextPlayerName = snap.session.activePlayers[(snap.session.turnIndex + 1) % snap.session.activePlayers.length];
+    const hudUpNext = document.getElementById('hud-up-next');
+    if (hudUpNext) hudUpNext.innerText = `UP NEXT: ${nextPlayerName}`;
+
+    cardSetup.innerText = currentCard.setupText;
+    cardAction.innerText = currentCard.actionText;
+    if(currentCard.gambit) {
+        document.getElementById('gambit-text').innerText = currentCard.gambit.text;
+    }
+    
+    localStorage.removeItem('kings_gambit_snapshot');
+    updateTreasuryUI(currentPlayerName);
+    showScreen(screenGame);
+    logVerbose("Undo Last Turn triggered.");
+  });
+}

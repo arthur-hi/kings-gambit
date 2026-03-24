@@ -12,12 +12,14 @@
     }
   </style>
   <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.json">
 </head>
 
 <body>
   <div id="app-container">
     <!-- Screen 1: Roster -->
     <div id="screen-roster" class="screen active">
+      <h1 style="text-align: center; color: var(--accent-gold); font-size: 2.8rem; margin-top: 15px; margin-bottom: 30px; letter-spacing: 2px;">KING'S GAMBIT</h1>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2 style="margin: 0;">Who's Playing?</h2>
         <div style="display: flex; gap: 10px;">
@@ -132,10 +134,44 @@
       </div>
     </div>
 
+    <!-- Modal: Edit Profile -->
+    <div id="modal-edit-profile" class="modal-overlay hidden">
+      <div class="bottom-sheet-content">
+        <h3 id="edit-profile-name" style="color: var(--accent-gold); margin-bottom: 20px;">Edit Player</h3>
+        <label class="custom-checkbox-container" style="text-align: left; margin-bottom: 10px;">
+          Use loose questions?
+          <input type="checkbox" id="edit-cb-single">
+          <span class="checkmark"></span>
+        </label>
+        <p style="text-align: left; margin: 15px 0 5px 0; font-size: 0.9rem; color: #aaa;">I refuse to do anything:</p>
+        <label class="custom-checkbox-container" style="text-align: left;">
+          Messy
+          <input type="checkbox" id="edit-cb-messy">
+          <span class="checkmark"></span>
+        </label>
+        <label class="custom-checkbox-container" style="text-align: left;">
+          Active
+          <input type="checkbox" id="edit-cb-active">
+          <span class="checkmark"></span>
+        </label>
+        <label class="custom-checkbox-container" style="text-align: left;">
+          Spicy
+          <input type="checkbox" id="edit-cb-spicy">
+          <span class="checkmark"></span>
+        </label>
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+          <button id="btn-save-profile" class="btn-primary" style="flex-grow: 1;">Save</button>
+          <button id="btn-cancel-profile" class="btn-secondary" style="flex-grow: 1;">Cancel</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Screen 3: The Game Board -->
     <div id="screen-game" class="screen hidden">
       <div id="hud">
-        <h2 id="hud-name">PLAYER'S TURN</h2>
+        <h2 id="hud-name" style="margin-bottom: 5px;">PLAYER'S TURN</h2>
+        <div id="hud-up-next" style="font-size: 0.8rem; color: #888; text-transform: uppercase;">UP NEXT: ?</div>
+        <div id="hud-round" style="color: var(--accent-gold); font-weight: bold; font-size: 1.2rem; letter-spacing: 1px;">ROUND 1</div>
         <div style="display: flex; gap: 15px;">
           <div id="hud-pause" style="font-size: 2rem; cursor: pointer;">⏸️</div>
           <div id="hud-treasury">👑 <span id="treasury-badge" class="hidden">0</span></div>
@@ -169,6 +205,7 @@
       <h3 style="margin-bottom: 15px;">Active Players:</h3>
       <div id="pause-roster-list" style="flex-grow: 1; overflow-y: auto;"></div>
       <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+        <button id="btn-undo-turn" class="btn-secondary">↩️ Undo Last Turn</button>
         <button id="btn-resume-game" class="btn-primary">▶️ Resume Game</button>
         <button id="btn-end-game" class="btn-danger"
           style="min-height: 60px; font-size: 1.2rem; font-weight: bold; border-radius: 12px; border: none; cursor: pointer;">🛑
