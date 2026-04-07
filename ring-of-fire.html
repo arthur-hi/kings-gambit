@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Ring of Fire - Kings Gambit</title>
+  <link rel="stylesheet" href="css/styles.css?v=1.1">
+</head>
+<body>
+
+  <!-- Top bar / King Tracker -->
+  <header class="app-header king-header">
+    <button id="back-btn" class="edit-btn" onclick="window.location.href='index.html'">✕</button>
+    <div class="king-tracker" id="king-tracker">
+      <div class="glass-icon">🥃</div><div class="glass-icon">🥃</div><div class="glass-icon">🥃</div><div class="glass-icon">🥃</div>
+    </div>
+  </header>
+
+  <main class="rof-arena">
+    <!-- Center Deck -->
+    <div id="deck-area" class="deck-area">
+      <!-- Cards injected by JS -->
+    </div>
+  </main>
+
+  <!-- Persistent turn bar -->
+  <footer class="turn-bar" id="turn-bar">
+    <div class="turn-indicator">
+      <span id="turn-emoji" class="turn-emoji">😎</span>
+      <span id="turn-name">Alex's turn</span>
+    </div>
+  </footer>
+
+  <!-- Rule Overlay / Modal -->
+  <div id="rule-overlay" class="rule-overlay">
+    <div class="rule-card">
+      <div class="modal-player-tag">
+        <span class="modal-tag-avatar" id="rof-modal-avatar"></span>
+        <span class="modal-tag-name" id="rof-modal-name"></span>
+      </div>
+      <h2 id="rule-title" class="rule-title">Placeholder</h2>
+      <p id="rule-text" class="rule-text">Rule text goes here...</p>
+      <p id="rule-subtext" class="rule-subtext"></p>
+      <button id="rule-continue-btn" class="btn-3d mt-4">Got it</button>
+    </div>
+  </div>
+
+  <!-- Blindfold Screen for the King -->
+  <div id="blindfold-screen" class="blindfold-screen">
+    <h1 class="blindfold-title">EYES SHUT, <span id="blindfold-name">Player</span>!</h1>
+    <div class="blindfold-timer" id="blindfold-timer">30</div>
+    <p class="blindfold-sub" id="blindfold-desc">Wait for the group to pour...</p>
+    
+    <div class="press-wrapper">
+      <button id="ready-btn" class="ready-btn">HOLD TO REVEAL</button>
+      <div class="press-progress" id="press-progress"></div>
+    </div>
+  </div>
+
+  <script src="js/storage.js?v=1.1"></script>
+  <script src="js/ring-of-fire.js?v=1.1"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mutiny - Kings Gambit</title>
+  <link rel="stylesheet" href="css/styles.css?v=1.1">
+</head>
+<body style="background-color: #0f172a;"> <!-- Prevent flash of white before rendering -->
+
+  <div id="mutiny-container" class="mutiny-container">
+    <header class="mutiny-header">
+      <button id="back-btn" class="edit-btn" onclick="window.location.href='index.html'">✕</button>
+    </header>
+
+    <main class="mutiny-arena">
+      <div class="mutiny-coin-wrapper">
+        <div id="mutiny-coin" class="mutiny-coin">☠️</div>
+      </div>
+      <div id="mutiny-prompt" class="mutiny-prompt is-visible">
+        TAP THE COIN TO ISSUE AN ORDER
+      </div>
+    </main>
+
+    <!-- Bounty Poster Modal -->
+    <div id="mutiny-overlay" class="rule-overlay">
+      <div id="mutiny-card" class="mutiny-card">
+        <div class="modal-player-tag">
+          <span class="modal-tag-avatar" id="mutiny-modal-avatar"></span>
+          <span class="modal-tag-name" id="mutiny-modal-name"></span>
+        </div>
+        <h2 id="mutiny-title" class="mutiny-card-title">THE CAPTAIN'S ORDER</h2>
+        <p id="mutiny-text" class="mutiny-card-text">Placeholder text</p>
+        <button id="mutiny-continue-btn" class="btn-3d mutiny-continue-btn mt-4">AYE AYE</button>
+      </div>
+    </div>
+
+    <footer class="turn-bar mutiny-turn-bar" id="turn-bar">
+      <div class="turn-indicator mutiny-turn-indicator">
+        <span id="turn-emoji" class="turn-emoji">😎</span>
+        <span id="turn-name">Capt. Alex's turn</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/storage.js?v=1.1"></script>
+  <script src="js/mutiny.js?v=1.1"></script>
+</body>
+</html>

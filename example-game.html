@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>The Handshake - Kings Gambit</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <main class="game-view">
+    <nav class="game-nav">
+      <button id="back-btn" class="game-nav-back" onclick="window.location.href='index.html'">✕</button>
+    </nav>
+    
+    <div class="game-center">
+      <div id="roster-preview" class="roster-preview">
+        <!-- Emojis populated by JS -->
+      </div>
+      
+      <button id="drink-btn" class="btn-3d">WHO DRINKS?</button>
+      
+      <div id="result-display" class="giant-result">
+        <!-- Result goes here -->
+      </div>
+    </div>
+  </main>
+
+  <script src="js/storage.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
