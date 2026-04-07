@@ -6,7 +6,7 @@ let activePlayers = [];
 
 function init() {
   activePlayers = window.Storage.getActivePlayers();
-  
+
   // Guard check
   if (activePlayers.length < 2) {
     alert("You need at least 2 players!");
@@ -17,7 +17,7 @@ function init() {
   // Populate emoji string
   const emojis = activePlayers.map(p => {
     if (p.emoji.endsWith('.png') || p.emoji.endsWith('.gif')) {
-       return `<img src="${p.emoji}" style="width:2em;height:2em;display:inline-block;object-fit:cover;border-radius:var(--radius-md);vertical-align:middle;" draggable="false">`;
+      return `<img src="${p.emoji}" style="width:2em;height:2em;display:inline-block;object-fit:cover;border-radius:var(--radius-md);vertical-align:middle;" draggable="false">`;
     }
     return p.emoji;
   }).join(' ');
@@ -28,8 +28,8 @@ function init() {
 
 function handleWhoDrinks() {
   // Hide result temporarily if already shown to re-trigger pop animation
-  resultDisplay.classList.remove('is-visible');
-  
+  //resultDisplay.classList.remove('is-visible');
+
   // Let the DOM update before re-adding class
   setTimeout(() => {
     // Pick random target
@@ -37,15 +37,36 @@ function handleWhoDrinks() {
     const target = activePlayers[randomIndex];
 
     // Show result
-    const emojiDisplay = target.emoji.endsWith('.png') || target.emoji.endsWith('.gif') 
-       ? `<img src="${target.emoji}" style="width:2em;height:2em;display:inline-block;object-fit:cover;border-radius:var(--radius-md);vertical-align:middle;" draggable="false">`
-       : target.emoji;
-       
+    const emojiDisplay = target.emoji.endsWith('.png') || target.emoji.endsWith('.gif')
+      ? `<img src="${target.emoji}" style="width:2em;height:2em;display:inline-block;object-fit:cover;border-radius:var(--radius-md);vertical-align:middle;" draggable="false">`
+      : target.emoji;
+
     resultDisplay.innerHTML = `${emojiDisplay}<br>${target.name} drinks!`;
     resultDisplay.classList.add('is-visible');
-    
+
     // Optional: visual feedback on the button to make it "pop"
-    drinkBtn.textContent = 'AGAIN?';
+
+    const againOptions = [
+      "AGAIN",
+      "ANOTHER",
+      "LET'S GO",
+      "ONE MORE TIME",
+      "ROLL THE DICE",
+      "HIT ME",
+      "SPIN IT",
+      "NEXT VICTIM",
+      "KEEP GOING",
+      "DO IT AGAIN"
+    ];
+    const exclamationOptions = [
+      "!",
+      "",
+      "?"
+    ]
+
+    let exclamation = ""
+    exclamation = exclamationOptions[Math.floor(Math.random() * exclamationOptions.length)] + exclamationOptions[Math.floor(Math.random() * exclamationOptions.length)] + exclamationOptions[Math.floor(Math.random() * exclamationOptions.length)] + exclamationOptions[Math.floor(Math.random() * exclamationOptions.length)] + exclamationOptions[Math.floor(Math.random() * exclamationOptions.length)] + exclamationOptions[Math.floor(Math.random() * exclamationOptions.length)];
+    drinkBtn.textContent = againOptions[Math.floor(Math.random() * againOptions.length)] + exclamation;
     drinkBtn.classList.add('secondary');
   }, 10);
 }

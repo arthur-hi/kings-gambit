@@ -1,7 +1,7 @@
 // Avatar packs for the drawer
 const PACKS = {
   animated: [
-    'packs/animated/aintnowway.gif', 'packs/animated/aSpookyDance.gif', 'packs/animated/basedsigma.gif', 'packs/animated/catdance.gif', 'packs/animated/catshake.gif', 'packs/animated/chipichapa.gif', 'packs/animated/come-here-monkey.gif', 'packs/animated/cry.gif', 'packs/animated/crying-laughing.gif', 'packs/animated/dafoe.gif', 'packs/animated/dance.gif', 'packs/animated/galaxybrainmeme.gif', 'packs/animated/kekmeme.gif', 'packs/animated/kiss-you.gif', 'packs/animated/lil_swag.gif', 'packs/animated/noooo.gif', 'packs/animated/nowaying.gif', 'packs/animated/plink.gif', 'packs/animated/polish_cow.gif', 'packs/animated/puts.gif', 'packs/animated/rickroll.gif', 'packs/animated/sasuke-stare.gif', 'packs/animated/shelby.gif', 'packs/animated/shhhhhh.gif', 'packs/animated/sip.gif', 'packs/animated/skull.gif', 'packs/animated/smirkhenry.gif', 'packs/animated/the-rock.gif', 'packs/animated/thevoices.gif', 'packs/animated/vibecat.gif', 'packs/animated/wait-wait-wait.gif'
+    'packs/animated/aintnowway.gif', 'packs/animated/aSpookyDance.gif', 'packs/animated/aurafarmer.gif', 'packs/animated/basedsigma.gif', 'packs/animated/catdance.gif', 'packs/animated/catshake.gif', 'packs/animated/chipichapa.gif', 'packs/animated/come-here-monkey.gif', 'packs/animated/cry.gif', 'packs/animated/crying-laughing.gif', 'packs/animated/dafoe.gif', 'packs/animated/dance.gif', 'packs/animated/dancee.gif', 'packs/animated/disapproval.gif', 'packs/animated/drimk.gif', 'packs/animated/freaky.gif', 'packs/animated/galaxybrainmeme.gif', 'packs/animated/kekmeme.gif', 'packs/animated/kiss-you.gif', 'packs/animated/lil_swag.gif', 'packs/animated/noooo.gif', 'packs/animated/nowaying.gif', 'packs/animated/num-num.gif', 'packs/animated/ohhhh.gif', 'packs/animated/plink.gif', 'packs/animated/polish_cow.gif', 'packs/animated/puts.gif', 'packs/animated/rickroll.gif', 'packs/animated/sasuke-stare.gif', 'packs/animated/shelby.gif', 'packs/animated/shhhhhh.gif', 'packs/animated/sideeye.gif', 'packs/animated/sip.gif', 'packs/animated/skull.gif', 'packs/animated/smirkhenry.gif', 'packs/animated/sr-doou.gif', 'packs/animated/sure.gif', 'packs/animated/sus.gif', 'packs/animated/the-rock.gif', 'packs/animated/thevoices.gif', 'packs/animated/troll-dance.gif', 'packs/animated/tweak.gif', 'packs/animated/vape.gif', 'packs/animated/vibecat.gif', 'packs/animated/wait-wait-wait.gif', 'packs/animated/walter.gif'
   ],
   clash_royale: [
     'packs/clash-royale/Emote_HogRider_Think.png', 'packs/clash-royale/Emote_king_hide.png', 'packs/clash-royale/Emote_Princess_YoChill.png', 'packs/clash-royale/emotes_goblin_pocketwatch_dl.png', 'packs/clash-royale/emotes_goblinhero_trollface_dl.png', 'packs/clash-royale/emotes_goldenknight_mewing_dl.png', 'packs/clash-royale/emotes_golem_sneaky_dl.png', 'packs/clash-royale/emotes_golem_susrock_dl.png', 'packs/clash-royale/emotes_royalhogsevo_phone_dl.png', 'packs/clash-royale/emotes_skeleton_shieldbang_dl.png'
@@ -131,7 +131,12 @@ function renderRoster() {
   }
 }
 
+let isProcessingClick = false;
+
 function handlePlayerClick(id) {
+  if (isProcessingClick) return;
+  isProcessingClick = true;
+
   if (isEditMode) {
     window.Storage.deletePlayer(id);
     renderRoster();
@@ -141,6 +146,11 @@ function handlePlayerClick(id) {
     renderRoster();
     updateGamesLockState();
   }
+
+  // Prevent multiple taps within 300ms
+  setTimeout(() => {
+    isProcessingClick = false;
+  }, 300);
 }
 
 function toggleEditMode() {

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,6 +8,7 @@
   <meta name="description" content="A bold, playful drinking game companion.">
   <link rel="stylesheet" href="css/styles.css?v=1.1">
 </head>
+
 <body>
 
   <!-- Header -->
@@ -21,14 +23,17 @@
       <div id="roster" class="roster-grid">
         <!-- Player avatars generated dynamically here -->
       </div>
-      
-      <p id="drag-hint" class="drag-hint" style="display:none; text-align:center; color:var(--color-text-muted); font-size: 0.9rem; margin-top: 16px;">drag to match your table seating.</p>
+
+      <p id="drag-hint" class="drag-hint"
+        style="display:none; text-align:center; color:var(--color-text-muted); font-size: 0.9rem; margin-top: 16px;">
+        drag to match your table seating,<br>tap
+        to toggle who's playing.</p>
     </section>
 
     <!-- Games List -->
     <section class="games-container">
       <h2 class="mb-4">Select a Game</h2>
-      
+
       <!-- Example Game Card -->
       <a href="example-game.html" id="game-handshake" class="game-card is-locked">
         <h3 class="game-card-title">The Handshake</h3>
@@ -44,7 +49,7 @@
       <!-- Mutiny Game Card -->
       <a href="mutiny.html" id="game-mutiny" class="game-card is-locked">
         <h3 class="game-card-title">Mutiny</h3>
-        <p class="game-card-desc">Spin the coin for pirate-themed prompts.</p>
+        <p class="game-card-desc">Spin the coin for drinking prompts.</p>
       </a>
     </section>
   </main>
@@ -56,7 +61,7 @@
       <h2>New Player</h2>
       <button id="drawer-close" class="drawer-close">✕</button>
     </div>
-    
+
     <div class="input-group">
       <label class="input-label" for="player-name">Name</label>
       <input type="text" id="player-name" class="input-text" placeholder="Enter name" autocomplete="off" maxlength="12">
@@ -74,4 +79,5 @@
   <script src="js/storage.js?v=1.1"></script>
   <script src="js/app.js?v=1.1"></script>
 </body>
+
 </html>

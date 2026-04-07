@@ -21,6 +21,9 @@ const ruleText = document.getElementById('rule-text');
 const ruleSubtext = document.getElementById('rule-subtext');
 const ruleContinueBtn = document.getElementById('rule-continue-btn');
 
+const gameOverOverlay = document.getElementById('game-over-overlay');
+const gameOverText = document.getElementById('game-over-text');
+
 // Blindfold
 const blindfoldScreen = document.getElementById('blindfold-screen');
 const blindfoldName = document.getElementById('blindfold-name');
@@ -42,7 +45,7 @@ function init() {
     window.location.href = 'index.html';
     return;
   }
-  
+
   currentPlayerIndex = 0;
   kingsDrawn = 0;
   generateDeck();
@@ -71,30 +74,51 @@ function shuffleDeck() {
 // --- Render ---
 function renderDeck() {
   deckArea.innerHTML = '';
-  // To keep DOM light and effect fast, we just render the top ~3 cards
-  const cardsToShow = Math.min(deck.length, 3);
-  
-  for (let i = 0; i < cardsToShow; i++) {
-    const cardData = deck[deck.length - 1 - i];
-    const cardEl = createCardElement(cardData, i);
+  // Render every card into the DOM once
+  deck.forEach((cardData, idx) => {
+    const cardEl = createCardElement(cardData);
+    // Assign a base random rotation for variety in the stack
+    const randomRot = (Math.random() + 0.5) * 8; // between -4 and +4
+    cardEl.dataset.rot = randomRot;
     deckArea.appendChild(cardEl);
-  }
+  });
+
+  updateDeckPositions();
 }
 
-function createCardElement(cardData, stackOffset) {
+function updateDeckPositions() {
+  const cards = Array.from(deckArea.querySelectorAll('.card:not(.is-discarded)'));
+  cards.forEach((card, domIndex) => {
+    const stackOffset = cards.length - 1 - domIndex; // 0 is top
+    const visibleOffset = Math.min(stackOffset, 3);
+
+    card.style.top = `${-visibleOffset * (Math.random() * 5 + 15)}px`;
+    card.style.left = `${-visibleOffset * (Math.random() * 5 + 15)}px`;
+    card.style.zIndex = domIndex;
+
+    if (stackOffset === 0) {
+      // Top card is straight and clickable
+      card.style.setProperty('--rot', `0deg`);
+      card.addEventListener('click', handleCardClick);
+    } else {
+      // Cards further back get their random rotation + an extra fanout
+      const baseRot = parseFloat(card.dataset.rot);
+      const stackRot = baseRot + (visibleOffset * -2);
+      card.style.setProperty('--rot', `${stackRot}deg`);
+      card.removeEventListener('click', handleCardClick);
+    }
+  });
+}
+
+function createCardElement(cardData) {
   const card = document.createElement('div');
   card.className = 'card';
   card.dataset.value = cardData.value;
   card.dataset.suit = cardData.suit;
-  
-  // slightly offset cards to look like a stack
-  card.style.top = `${-stackOffset * 2}px`;
-  card.style.left = `${stackOffset * 2}px`;
-  card.style.zIndex = 100 - stackOffset;
 
   const back = document.createElement('div');
   back.className = 'card-face card-back';
-  
+
   const front = document.createElement('div');
   front.className = `card-face card-front ${!cardData.isRed ? 'black-suit' : ''}`;
   front.innerHTML = `${cardData.value}<br><span style="font-size: 0.5em">${cardData.suit}</span>`;
@@ -102,23 +126,18 @@ function createCardElement(cardData, stackOffset) {
   card.appendChild(back);
   card.appendChild(front);
 
-  // Only the top card is interactive
-  if (stackOffset === 0) {
-    card.addEventListener('click', handleCardClick);
-  }
-
   return card;
 }
 
 function updateTurnUI() {
   const p = activePlayers[currentPlayerIndex];
-  
+
   if (p.emoji.endsWith('.png') || p.emoji.endsWith('.gif')) {
     turnEmoji.innerHTML = `<img src="${p.emoji}" class="avatar-image" draggable="false">`;
   } else {
     turnEmoji.textContent = p.emoji;
   }
-  
+
   turnName.textContent = `${p.name}'s turn`;
 }
 
@@ -140,10 +159,10 @@ function handleCardClick(e) {
   if (deck.length === 0) return;
   const cardEl = e.currentTarget;
   currentCardEl = cardEl;
-  
+
   // Animate Flip
   cardEl.classList.add('is-flipped');
-  
+
   setTimeout(() => {
     processCardResolution();
   }, 600); // Wait for flip animation
@@ -169,9 +188,9 @@ function discardCurrentCard() {
   if (currentCardEl) {
     currentCardEl.classList.add('is-discarded');
     setTimeout(() => {
-      renderDeck();
       if (kingsDrawn < 4) {
         advanceTurn();
+        updateDeckPositions(); // Slides the cards immediately into place
       }
     }, 200);
   }
@@ -179,7 +198,7 @@ function discardCurrentCard() {
 
 // --- Rules Dictionary ---
 function getRuleText(value, playerName) {
-  switch(value) {
+  switch (value) {
     case 'A': return { main: "Waterfall! Everyone drinks!" };
     case '2': return { main: `${playerName}, pick someone to drink.` };
     case '3': return { main: `${playerName}, take a drink.` };
@@ -187,23 +206,23 @@ function getRuleText(value, playerName) {
     case '5': return { main: "All the guys drink." };
     case '6': return { main: "All the girls drink." };
     case '7': return { main: "Point to the sky! Last one drinks." };
-    case '8': return { 
+    case '8': return {
       main: `${playerName}, pick a drinking buddy.`,
       sub: "You are now tethered. Whenever you drink for the rest of the game, they drink too."
     };
-    case '9': return { 
+    case '9': return {
       main: `${playerName}, pick a word to rhyme.`,
       sub: "Pick a word like 'cat'. Go around the circle rhyming. If you fail, you drink."
     };
-    case '10': return { 
+    case '10': return {
       main: `${playerName}, pick a category.`,
       sub: "e.g., 'car brands' or 'dog breeds'. First to pause, stutter, or repeat drinks."
     };
-    case 'J': return { 
+    case 'J': return {
       main: "Never have I ever! Everyone 3 fingers.",
       sub: "Everyone starts with 3 fingers. Say something you've never done; if others have, they drop a finger."
     };
-    case 'Q': return { 
+    case 'Q': return {
       main: `Question Master! ${playerName} is now the master.`,
       sub: "If anyone answers a question you ask, they drink. Lasts until the next Queen is drawn."
     };
@@ -214,20 +233,20 @@ function getRuleText(value, playerName) {
 function showRuleModal(value) {
   const p = activePlayers[currentPlayerIndex];
   const rule = getRuleText(value, p.name);
-  
+
   const ruleModalAvatar = document.getElementById('rof-modal-avatar');
   const ruleModalName = document.getElementById('rof-modal-name');
-  
+
   if (p.emoji.endsWith('.png') || p.emoji.endsWith('.gif')) {
     ruleModalAvatar.innerHTML = `<img src="${p.emoji}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md);" draggable="false">`;
   } else {
     ruleModalAvatar.textContent = p.emoji;
   }
   ruleModalName.textContent = p.name;
-  
+
   ruleTitle.textContent = value === 'A' ? 'ACE' : value === 'J' ? 'JACK' : value === 'Q' ? 'QUEEN' : value;
   ruleText.textContent = rule.main;
-  
+
   if (rule.sub) {
     ruleSubtext.style.display = 'block';
     ruleSubtext.textContent = rule.sub;
@@ -235,17 +254,17 @@ function showRuleModal(value) {
     ruleSubtext.style.display = 'none';
     ruleSubtext.textContent = '';
   }
-  
+
   ruleOverlay.classList.add('is-visible');
 }
 
 ruleContinueBtn.addEventListener('click', () => {
   ruleOverlay.classList.remove('is-visible');
   discardCurrentCard();
-  
+
   if (deck.length === 0) {
-    alert("Deck empty! Game over.");
-    window.location.href = 'index.html';
+    gameOverText.textContent = "The deck is empty! Everyone finish your drinks.";
+    gameOverOverlay.classList.add('is-visible');
   }
 });
 
@@ -256,7 +275,7 @@ function triggerBlindfold() {
   blindfoldTimer.textContent = '30';
   blindfoldDesc.textContent = `Everyone else: quickly mix a mystery drink for ${p.name}!`;
   blindfoldScreen.classList.add('is-visible');
-  
+
   let time = 30;
   countdownInterval = setInterval(() => {
     time--;
@@ -281,7 +300,7 @@ function startPress(e) {
   e.preventDefault(); // Prevent text selection/defaults
   readyBtn.textContent = 'HOLDING...';
   let progress = 0;
-  
+
   holdProgressInterval = setInterval(() => {
     progress += 5; // 5% per 100ms = 2000ms total
     pressProgress.style.width = `${progress}%`;
@@ -293,20 +312,20 @@ function startPress(e) {
     readyBtn.textContent = 'OPEN EM!';
     pressProgress.style.width = '100%';
     pressProgress.style.backgroundColor = 'var(--color-primary)';
-    
+
     setTimeout(() => {
       dismissBlindfold();
     }, 500);
-    
+
   }, 2000);
 }
 
 function clearPress(e) {
-  if (e) e.preventDefault();
+  if (e) { }
   clearTimeout(holdTimeout);
   clearInterval(holdProgressInterval);
   holdTimeout = null;
-  
+
   if (blindfoldScreen.classList.contains('is-visible') && readyBtn.textContent !== 'OPEN EM!') {
     readyBtn.textContent = 'HOLD TO REVEAL';
     pressProgress.style.width = '0%';
@@ -316,26 +335,28 @@ function clearPress(e) {
 function dismissBlindfold() {
   clearInterval(countdownInterval);
   blindfoldScreen.classList.remove('is-visible');
-  
+
   // Reset UI elements for next king
   setTimeout(() => {
     readyBtn.textContent = 'HOLD TO REVEAL';
     pressProgress.style.width = '0%';
     pressProgress.style.backgroundColor = 'var(--color-secondary)';
-    
+
     discardCurrentCard();
 
     if (kingsDrawn === 4) {
-      alert("4 Kings drawn! GAME OVER.");
-      window.location.href = 'index.html';
+      setTimeout(() => {
+        gameOverText.textContent = "The 4th King has been drawn! The cursed goblet awaits.";
+        gameOverOverlay.classList.add('is-visible');
+      }, 500); // Wait for the discard animation before slamming the game over
     }
   }, 500);
 }
 
 function setupEventListeners() {
   readyBtn.addEventListener('mousedown', startPress);
-  readyBtn.addEventListener('touchstart', startPress, {passive: false});
-  
+  readyBtn.addEventListener('touchstart', startPress, { passive: false });
+
   window.addEventListener('mouseup', clearPress);
   window.addEventListener('touchend', clearPress);
 }

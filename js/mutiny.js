@@ -1,7 +1,6 @@
 const mutinyCards = [
   "{player}, do an action to {left}. they repeat it and add one. continue until someone fails. loser drinks.",
   "{player}, race {across} to finish your drink. loser takes another drink.",
-  "{player}, reveal your guilty pleasure to the crew.",
   "travel: whoever has travelled to the most countries drinks.",
   "tea or coffee: everyone picks a side. the minority group drinks.",
   "{player}, tell 2 truths and 1 lie. everyone who guesses wrong drinks.",
@@ -45,9 +44,7 @@ const mutinyCards = [
   "even age: if your age is an even number, drink.",
   "dance off: {player}, dance until your next turn or down your drink.",
   "waterfall lite: {player}, down your entire drink.",
-  "buffest player: the most buff player drinks.",
   "hands up: everyone puts hands in the air. last one drinks.",
-  "{player}, tell a joke. if no one laughs, you drink.",
   "{player}, drink for every letter in your name.",
   "the finger: everyone points at someone. most points drinks.",
   "{player}, tilt your head all the way back and drink.",
@@ -84,7 +81,6 @@ const mutinyCards = [
   "beatles songs: {player}, start naming beatles songs. first to repeat or fail drinks.",
   "dog breeds: {player}, start naming dog breeds. first to repeat or fail drinks.",
   "eye contact roulette: everyone look at the ground. on the count of three, look up at another player's eyes. any players making eye contact must drink.",
-  "joke evaluation: {right} must tell {player} a joke. if {player} doesn't laugh, {right} drinks.",
   "most likely: {player}, state a 'who is most likely to...' situation. on the count of three, everyone points. that player drinks.",
   "best dressed: {player}, choose which player is best dressed; they must drink.",
   "{player}, do 10 push ups or take a drink.",
@@ -151,13 +147,13 @@ function fillDeck() {
 
 function updateTurnUI() {
   const p = activePlayers[currentPlayerIndex];
-  
+
   if (p.emoji.endsWith('.png') || p.emoji.endsWith('.gif')) {
     turnEmoji.innerHTML = `<img src="${p.emoji}" class="avatar-image" draggable="false">`;
   } else {
     turnEmoji.textContent = p.emoji;
   }
-  
+
   turnName.textContent = `Capt. ${p.name}'s turn`;
 }
 
