@@ -1,17 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Mutiny - Kings Gambit</title>
   <link rel="stylesheet" href="css/styles.css?v=1.1">
 </head>
+
 <body style="background-color: #0f172a;"> <!-- Prevent flash of white before rendering -->
 
   <div id="mutiny-container" class="mutiny-container">
-    <header class="mutiny-header">
-      <button id="back-btn" class="edit-btn" onclick="window.location.href='index.html'">✕</button>
-    </header>
+    <nav class="game-nav">
+      <button id="back-btn" class="game-nav-back">✕</button>
+    </nav>
+
+    <div id="curse-banner" class="curse-banner" style="display: none;">
+      <span class="curse-label">ACTIVE CURSE:</span>
+      <span id="curse-text" class="curse-text"></span>
+    </div>
 
     <main class="mutiny-arena">
       <div class="mutiny-coin-wrapper">
@@ -27,11 +34,43 @@
       <div id="mutiny-card" class="mutiny-card">
         <div class="modal-player-tag">
           <span class="modal-tag-avatar" id="mutiny-modal-avatar"></span>
-          <span class="modal-tag-name" id="mutiny-modal-name"></span>
+          <p class="modal-tag-name" id="mutiny-modal-name"></p>
         </div>
         <h2 id="mutiny-title" class="mutiny-card-title">THE CAPTAIN'S ORDER</h2>
         <p id="mutiny-text" class="mutiny-card-text">Placeholder text</p>
+        <button id="cbtm-explain-btn" class="btn-3d secondary"
+          style="display: none; margin-bottom: 12px;">Explain</button>
+        <div id="cbtm-explanation" class="cbtm-explanation-text" style="display: inline-block;">
+          Pitch your statement to the group. You have 30 seconds to convince everyone it <strong>"could be the
+            move."</strong> When the timer ends, the group votes. If they agree — they drink. If they deny it — you
+          finish
+          your drink.
+          <br><br>
+          Example: “pre-ing at grandpa’s with the boys, cheap drinks, great company, and he’s in bed by 9pm perfect for
+          the boys to then go out”
+        </div>
+        <button id="cbtm-start-btn" class="btn-3d"
+          style="display: none; background-color: #92400e; margin-bottom: 16px;">START PITCH</button>
+        <div id="cbtm-timer" style="display: none; font-size: 4rem; font-weight: 900; color: #92400e; margin: 16px 0;">
+          30</div>
+        <button id="cbtm-done-btn" class="btn-3d secondary"
+          style="display: none; margin-bottom: 16px; font-size: 0.85rem;">FINISHED EARLY</button>
+        <div id="cbtm-vote-actions" style="display: none; flex-direction: column; gap: 12px; margin-bottom: 16px;">
+          <button id="cbtm-win-btn" class="btn-3d" style="background-color: #22c55e;">IT'S THE MOVE</button>
+          <button id="cbtm-lose-btn" class="btn-3d" style="background-color: #ef4444;">NOT THE MOVE</button>
+        </div>
         <button id="mutiny-continue-btn" class="btn-3d mutiny-continue-btn mt-4">AYE AYE</button>
+      </div>
+    </div>
+
+    <!-- Exit Modal -->
+    <div id="exit-overlay" class="rule-overlay">
+      <div class="rule-card">
+        <h2 class="rule-title">ABANDON SHIP?</h2>
+        <p class="rule-text">are you sure you want to end the game?</p>
+        <button id="exit-stay-btn" class="btn-3d mt-4">KEEP PLAYING</button>
+        <br>
+        <button id="exit-quit-btn" class="btn-3d mt-2 secondary">YES, QUIT</button>
       </div>
     </div>
 
@@ -46,4 +85,5 @@
   <script src="js/storage.js?v=1.1"></script>
   <script src="js/mutiny.js?v=1.1"></script>
 </body>
+
 </html>

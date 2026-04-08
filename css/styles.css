@@ -495,7 +495,10 @@ h3 {
 }
 
 .game-nav {
-  margin-bottom: auto;
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  z-index: 1000;
 }
 
 .game-nav-back {
@@ -567,12 +570,87 @@ h3 {
   transition: background-color 0.5s ease;
 }
 
+.curse-banner {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--color-secondary-dark, #7c2d12);
+  text-align: center;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  animation: cursePulse 2s ease-in-out infinite;
+
+  z-index: 0;
+  padding-top: 5rem;
+  background: var(--color-bg-alt);
+}
+
+.curse-label {
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-secondary-dark);
+  margin-right: 6px;
+}
+
+.curse-text {
+  font-size: 1rem;
+}
+
+@keyframes cursePulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(202, 138, 4, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(202, 138, 4, 0.6);
+  }
+}
+
 .mutiny-container.flash-gold {
   background-color: #ca8a04 !important;
 }
 
 .mutiny-container.flash-red {
   background-color: #b91c1c !important;
+}
+
+.mutiny-container.flash-purple {
+  background-color: #4c1d95 !important;
+}
+
+.cbtm-explanation-text {
+  font-size: 1.05rem;
+  color: #451a03;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  padding: 0px;
+  background: rgba(120, 53, 15, 0.1);
+  border-radius: var(--radius-md, 12px);
+  border: 1px solid rgba(120, 53, 15, 0.2);
+
+  overflow: hidden;
+  height: 0px;
+
+  transition: height 0.3s ease, padding 0.3s ease;
+}
+
+.cbtm-explanation-text.is-open {
+  height: 325px;
+  padding: 16px;
+}
+
+.cbtm-explanation-text strong {
+  color: #92400e;
+}
+
+.modal-player-tag>span>img {
+  transition: width 0.3s ease;
+}
+
+.modal-player-tag.is-shrunk>span>img {
+  width: 0% !important;
 }
 
 .mutiny-header {

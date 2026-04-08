@@ -20,6 +20,12 @@
   <!-- Player Roster -->
   <main>
     <section class="roster-container">
+      <div id="zero-state-welcome" style="display: none; text-align: center; padding: 24px 0;">
+        <h2 style="font-size: 1.5rem; margin-bottom: 8px;">Welcome to Kings Gambit.</h2>
+        <p style="color: var(--color-text-muted); margin-bottom: 24px;">add at least two players to unlock the games.</p>
+        <button id="zero-state-add-btn" class="btn-3d btn-primary" onclick="openDrawer()">Add First Player</button>
+      </div>
+
       <div id="roster" class="roster-grid">
         <!-- Player avatars generated dynamically here -->
       </div>
@@ -73,6 +79,18 @@
         </div>
       </div>
       <button id="save-player-btn" class="btn-3d btn-primary">Add Player</button>
+    </div>
+  </div>
+
+  <!-- Install Drawer -->
+  <div id="install-drawer" class="drawer">
+    <div class="drawer-header" style="justify-content: center; text-align: center; margin-top: 10px;">
+      <h2>Play Anywhere</h2>
+    </div>
+    <div class="input-group" style="text-align: center;">
+      <p style="color: var(--color-text-muted); line-height: 1.5; margin-bottom: 24px;">Add Kings Gambit to your home screen for offline play and zero browser clutter.</p>
+      <button id="install-btn" class="btn-3d btn-primary" style="margin-bottom: 12px; display: block; width: 100%;">Install App</button>
+      <button id="install-not-now-btn" class="btn-3d secondary" style="display: block; width: 100%;">Not Now</button>
     </div>
   </div>
 

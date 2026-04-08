@@ -24,6 +24,12 @@ const ruleContinueBtn = document.getElementById('rule-continue-btn');
 const gameOverOverlay = document.getElementById('game-over-overlay');
 const gameOverText = document.getElementById('game-over-text');
 
+// Exit Modal
+const backBtn = document.getElementById('back-btn');
+const exitOverlay = document.getElementById('exit-overlay');
+const exitStayBtn = document.getElementById('exit-stay-btn');
+const exitQuitBtn = document.getElementById('exit-quit-btn');
+
 // Blindfold
 const blindfoldScreen = document.getElementById('blindfold-screen');
 const blindfoldName = document.getElementById('blindfold-name');
@@ -53,6 +59,11 @@ function init() {
   renderDeck();
   updateTurnUI();
   setupEventListeners();
+  //setupBlindfoldEvents();
+
+  backBtn.addEventListener('click', () => exitOverlay.classList.add('is-visible'));
+  exitStayBtn.addEventListener('click', () => exitOverlay.classList.remove('is-visible'));
+  exitQuitBtn.addEventListener('click', () => window.location.href = 'index.html');
 }
 
 function generateDeck() {

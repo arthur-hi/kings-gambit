@@ -48,6 +48,12 @@ let currentDragTarget = null;
 let currentDraggedId = null;
 let draggedNodeClone = null;
 
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+});
+
 // Global Drag Listeners
 document.addEventListener('mousemove', handleGlobalMove, { passive: false });
 document.addEventListener('mouseup', handleGlobalUp);
@@ -60,14 +66,41 @@ function init() {
   initEmojiGrid();
   setupEventListeners();
   updateGamesLockState();
+
+  // PWA Prompt Logic
+  const declinedInstall = localStorage.getItem('kings-gambit-declined-install');
+  if (!declinedInstall) {
+    const activeData = window.Storage.getActivePlayers();
+    if (activeData.length >= 2) {
+      setTimeout(() => {
+        const installDrawer = document.getElementById('install-drawer');
+        drawerOverlay.classList.add('is-visible');
+        installDrawer.classList.add('is-open');
+      }, 500);
+    }
+  }
 }
 
 // --- Roster Logic ---
 function renderRoster() {
+  const zeroStateWelcome = document.getElementById('zero-state-welcome');
+  const players = window.Storage.getPlayers();
+
+  if (players.length === 0) {
+    zeroStateWelcome.style.display = 'block';
+    rosterEl.style.display = 'none';
+  } else {
+    zeroStateWelcome.style.display = 'none';
+    rosterEl.style.display = 'grid'; // restoring the grid class implicitly by just showing it
+
+    if (players.length === 1) {
+      // Force user to add at least two players
+      setTimeout(openDrawer, 10);
+    }
+  }
+
   // Clear generic contents
   rosterEl.innerHTML = '';
-
-  const players = window.Storage.getPlayers();
 
   // Create player elements
   players.forEach(player => {
@@ -381,6 +414,33 @@ function setupEventListeners() {
   playerNameInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') handleAddPlayer();
   });
+
+  // PWA Buttons
+  const installBtn = document.getElementById('install-btn');
+  const installNotNowBtn = document.getElementById('install-not-now-btn');
+  const installDrawer = document.getElementById('install-drawer');
+
+  if (installBtn && installNotNowBtn) {
+    installBtn.addEventListener('click', async () => {
+      console.log('installBtn clicked');
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          deferredPrompt = null;
+        }
+      }
+      installDrawer.classList.remove('is-open');
+      drawerOverlay.classList.remove('is-visible');
+    });
+
+    installNotNowBtn.addEventListener('click', () => {
+      console.log('installNotNowBtn clicked');
+      localStorage.setItem('kings-gambit-declined-install', 'true');
+      installDrawer.classList.remove('is-open');
+      drawerOverlay.classList.remove('is-visible');
+    });
+  }
 }
 
 // Run init

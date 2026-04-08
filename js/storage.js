@@ -1,9 +1,6 @@
 const STORAGE_KEY = 'kings-gambit-players';
 
-const defaultPlayers = [
-  { id: '1', name: 'Alex', emoji: '🍺', isActive: true },
-  { id: '2', name: 'Sam', emoji: '🍷', isActive: true }
-];
+const defaultPlayers = [];
 
 function getPlayers() {
   try {
