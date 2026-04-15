@@ -1,34 +1,32 @@
-// Avatar packs for the drawer
-const PACKS = {
-  animated: [
-    'packs/animated/aintnowway.gif', 'packs/animated/aSpookyDance.gif', 'packs/animated/aurafarmer.gif', 'packs/animated/basedsigma.gif', 'packs/animated/catdance.gif', 'packs/animated/catshake.gif', 'packs/animated/chipichapa.gif', 'packs/animated/come-here-monkey.gif', 'packs/animated/cry.gif', 'packs/animated/crying-laughing.gif', 'packs/animated/dafoe.gif', 'packs/animated/dance.gif', 'packs/animated/dancee.gif', 'packs/animated/disapproval.gif', 'packs/animated/drimk.gif', 'packs/animated/freaky.gif', 'packs/animated/galaxybrainmeme.gif', 'packs/animated/kekmeme.gif', 'packs/animated/kiss-you.gif', 'packs/animated/lil_swag.gif', 'packs/animated/noooo.gif', 'packs/animated/nowaying.gif', 'packs/animated/num-num.gif', 'packs/animated/ohhhh.gif', 'packs/animated/plink.gif', 'packs/animated/polish_cow.gif', 'packs/animated/puts.gif', 'packs/animated/rickroll.gif', 'packs/animated/sasuke-stare.gif', 'packs/animated/shelby.gif', 'packs/animated/shhhhhh.gif', 'packs/animated/sideeye.gif', 'packs/animated/sip.gif', 'packs/animated/skull.gif', 'packs/animated/smirkhenry.gif', 'packs/animated/sr-doou.gif', 'packs/animated/sure.gif', 'packs/animated/sus.gif', 'packs/animated/the-rock.gif', 'packs/animated/thevoices.gif', 'packs/animated/troll-dance.gif', 'packs/animated/tweak.gif', 'packs/animated/vape.gif', 'packs/animated/vibecat.gif', 'packs/animated/wait-wait-wait.gif', 'packs/animated/walter.gif'
-  ],
-  clash_royale: [
-    'packs/clash-royale/Emote_HogRider_Think.png', 'packs/clash-royale/Emote_king_hide.png', 'packs/clash-royale/Emote_Princess_YoChill.png', 'packs/clash-royale/emotes_goblin_pocketwatch_dl.png', 'packs/clash-royale/emotes_goblinhero_trollface_dl.png', 'packs/clash-royale/emotes_goldenknight_mewing_dl.png', 'packs/clash-royale/emotes_golem_sneaky_dl.png', 'packs/clash-royale/emotes_golem_susrock_dl.png', 'packs/clash-royale/emotes_royalhogsevo_phone_dl.png', 'packs/clash-royale/emotes_skeleton_shieldbang_dl.png'
-  ],
-  meme: [
-    'packs/meme/absolutecinema.png', 'packs/meme/ahhhhh.png', 'packs/meme/babythink.png', 'packs/meme/cat.png', 'packs/meme/cathink.png', 'packs/meme/confused-mrbean.png', 'packs/meme/cooked-soldier.png', 'packs/meme/cooked.png', 'packs/meme/do-not-get-diddled.png', 'packs/meme/giga-chad.png', 'packs/meme/hamstermeme.png', 'packs/meme/happywisetree.png', 'packs/meme/harold.png', 'packs/meme/holyskull.png', 'packs/meme/lets-go.png', 'packs/meme/minion.png', 'packs/meme/monkeythink.png', 'packs/meme/perrito.png', 'packs/meme/thousandyardstare.png', 'packs/meme/widespeedlaugh.png', 'packs/meme/win.png'
-  ],
-  tiktok: [
-    'packs/tiktok/angel.png', 'packs/tiktok/angry.png', 'packs/tiktok/complacent.png', 'packs/tiktok/cute-tiktok.png', 'packs/tiktok/cute.png', 'packs/tiktok/disdain.png', 'packs/tiktok/emoji.png', 'packs/tiktok/flushed.png', 'packs/tiktok/funnyface.png', 'packs/tiktok/hehe.png', 'packs/tiktok/loveface.png', 'packs/tiktok/nap.png', 'packs/tiktok/pride.png', 'packs/tiktok/proud.png', 'packs/tiktok/rage.png', 'packs/tiktok/shock.png', 'packs/tiktok/shout.png', 'packs/tiktok/slap.png'
-  ],
-  top_gear: [
-    'packs/top-gear/clarkson-l.png', 'packs/top-gear/clarkson-oh-no.png', 'packs/top-gear/clarkson-oops.png', 'packs/top-gear/clarkson-smug.png', 'packs/top-gear/clarkson-snooze.png', 'packs/top-gear/clarkson-thumps-up.png', 'packs/top-gear/clarkson-yay.png', 'packs/top-gear/hammond-aa55hol.png', 'packs/top-gear/hammond-may-cheers.png', 'packs/top-gear/hammond-may-expectation.png', 'packs/top-gear/hammond-may-oh-lord.png', 'packs/top-gear/hammond-oh-no.png', 'packs/top-gear/hammond-uhh.png', 'packs/top-gear/hammond-wtf.png', 'packs/top-gear/hammond-yass.png', 'packs/top-gear/may-bedtime.png', 'packs/top-gear/may-cat.png', 'packs/top-gear/may-drinks.png', 'packs/top-gear/may-great-news.png', 'packs/top-gear/may-happy.png', 'packs/top-gear/may-hearteyes.png', 'packs/top-gear/may-l.png', 'packs/top-gear/may-photobomb.png', 'packs/top-gear/may-snooze.png', 'packs/top-gear/may-v.png', 'packs/top-gear/may-yay.png', 'packs/top-gear/stig-gorgeous.png', 'packs/top-gear/stig-turned.png'
-  ],
-  jujutsu_kaisen: [
-    'packs/jujutsu-kaisen/10021-choso-facepalm.png', 'packs/jujutsu-kaisen/13252-vaimorrer.png', 'packs/jujutsu-kaisen/53542-yuji-dead.png', 'packs/jujutsu-kaisen/84962-hollow-purple.gif', 'packs/jujutsu-kaisen/86168-gojo-crazy.gif', 'packs/jujutsu-kaisen/95523-sukuna-clap.gif'
-  ]
-};
+// Avatar packs for the drawer load from packs.js
+const PACKS = window.PACKS;
 
 // DOM Elements
 const rosterEl = document.getElementById('roster');
 const editBtn = document.getElementById('edit-btn');
+const settingsBtn = document.getElementById('settings-btn');
 const gamesList = document.querySelectorAll('.game-card');
+
+// Settings
+const SETTINGS_KEY = 'kings-gambit-settings';
+function getSettings() {
+  try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; } catch(e) { return {}; }
+}
+function saveSettings(obj) {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...getSettings(), ...obj }));
+}
+function getAvatarMode() {
+  return getSettings().avatarMode || 'animated';
+}
+function applyAvatarMode() {
+  document.body.dataset.avatarMode = getAvatarMode();
+}
 
 // Drawer DOM Elements
 const drawerOverlay = document.getElementById('drawer-overlay');
 const addPlayerDrawer = document.getElementById('add-player-drawer');
 const drawerCloseBtn = document.getElementById('drawer-close');
+const drawerTitle = document.getElementById('drawer-title');
 const playerNameInput = document.getElementById('player-name');
 const packTabs = document.getElementById('pack-tabs');
 const emojiGrid = document.getElementById('emoji-grid');
@@ -36,6 +34,7 @@ const savePlayerBtn = document.getElementById('save-player-btn');
 
 // State
 let isEditMode = false;
+let editingPlayerId = null;
 let currentPack = 'animated';
 let selectedEmoji = PACKS.animated[0];
 
@@ -54,10 +53,76 @@ window.addEventListener('beforeinstallprompt', (e) => {
   deferredPrompt = e;
 });
 
+// --- Settings Modal UI ---
+function renderSettingsModal() {
+  const container = document.getElementById('settings-content');
+  if (!container) return;
+  const current = getAvatarMode();
+  const modes = [
+    { id: 'animated',  label: '🎞️ Animated',      desc: 'Avatars loop continuously' },
+    { id: 'once',      label: '▶️ Animate Once',   desc: 'Plays from start, no loop' },
+    { id: 'static',    label: '🖼️ Static',          desc: 'Shows first frame, no animation' },
+  ];
+  container.innerHTML = modes.map(m => `
+    <button class="settings-option${current === m.id ? ' is-selected' : ''}" data-mode="${m.id}">
+      <span class="settings-option-label">${m.label}</span>
+      <span class="settings-option-desc">${m.desc}</span>
+    </button>
+  `).join('');
+  container.querySelectorAll('.settings-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      saveSettings({ avatarMode: btn.dataset.mode });
+      applyAvatarMode();
+      renderSettingsModal();
+      renderRoster(); // refresh avatars with new mode
+    });
+  });
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  applyAvatarMode();
+  init();
+});
+
+// --- Avatar Mode Rendering ---
+function renderAvatarImg(src) {
+  const mode = getAvatarMode();
+  if (mode === 'static' && src.endsWith('.gif')) {
+    return `<canvas class="avatar-image avatar-static-canvas" data-gif-src="${src}" width="80" height="80"></canvas>`;
+  }
+  if (mode === 'once' && src.endsWith('.gif')) {
+    // Append timestamp to force the GIF to restart from frame 1 each render
+    const freshSrc = `${src}?t=${Date.now()}`;
+    return `<img src="${freshSrc}" class="avatar-image" draggable="false" style="pointer-events:none;">`;
+  }
+  return `<img src="${src}" class="avatar-image" draggable="false">`;
+}
+
+function snapshotStaticCanvases() {
+  document.querySelectorAll('.avatar-static-canvas').forEach(canvas => {
+    if (canvas.dataset.snapped) return;
+    const src = canvas.dataset.gifSrc;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const ctx = canvas.getContext('2d');
+      canvas.width = img.naturalWidth || 80;
+      canvas.height = img.naturalHeight || 80;
+      ctx.drawImage(img, 0, 0);
+      canvas.dataset.snapped = '1';
+    };
+    img.src = src;
+  });
+}
+
 // Global Drag Listeners
-document.addEventListener('mousemove', handleGlobalMove, { passive: false });
+document.addEventListener('mousemove', handleGlobalMove, {
+  passive: false
+});
 document.addEventListener('mouseup', handleGlobalUp);
-document.addEventListener('touchmove', handleGlobalMove, { passive: false });
+document.addEventListener('touchmove', handleGlobalMove, {
+  passive: false
+});
 document.addEventListener('touchend', handleGlobalUp);
 
 // --- Initialization ---
@@ -113,10 +178,47 @@ function renderRoster() {
     const avatar = document.createElement('div');
     avatar.className = 'avatar';
     if (player.emoji.endsWith('.png') || player.emoji.endsWith('.gif')) {
-      avatar.innerHTML = `<img src="${player.emoji}" class="avatar-image" draggable="false">`;
+      avatar.innerHTML = renderAvatarImg(player.emoji);
     } else {
       avatar.textContent = player.emoji;
     }
+
+    // Delete button
+    const deleteBtn = document.createElement('span');
+    deleteBtn.className = 'delete-btn';
+    deleteBtn.textContent = '✕';
+    deleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!isEditMode) return;
+      
+      const removeOverlay = document.getElementById('remove-overlay');
+      const removeText = document.getElementById('remove-player-name-text');
+      const confirmBtn = document.getElementById('remove-confirm-btn');
+      const cancelBtn = document.getElementById('remove-cancel-btn');
+      
+      if (removeOverlay) {
+        removeText.textContent = `Are you sure you want to remove ${player.name}?`;
+        removeOverlay.classList.add('is-visible');
+        
+        confirmBtn.onclick = () => {
+          window.Storage.deletePlayer(player.id);
+          if (navigator.vibrate) navigator.vibrate(50);
+          renderRoster();
+          updateGamesLockState();
+          removeOverlay.classList.remove('is-visible');
+        };
+        
+        cancelBtn.onclick = () => {
+          removeOverlay.classList.remove('is-visible');
+        };
+      } else {
+        window.Storage.deletePlayer(player.id);
+        if (navigator.vibrate) navigator.vibrate(50);
+        renderRoster();
+        updateGamesLockState();
+      }
+    });
+    wrapper.appendChild(deleteBtn);
 
     const name = document.createElement('div');
     name.className = 'avatar-name';
@@ -157,10 +259,20 @@ function renderRoster() {
   }
 
   const dragHint = document.getElementById('drag-hint');
-  if (players.filter(p => p.isActive).length >= 2 && !isEditMode) {
+  if (players.length > 0) {
     dragHint.style.display = 'block';
+    if (isEditMode) {
+      dragHint.innerHTML = "tap avatar to edit and tap the red X thing to remove.";
+    } else {
+      dragHint.innerHTML = "drag to match your table seating,<br>tap to toggle who's playing.";
+    }
   } else {
     dragHint.style.display = 'none';
+  }
+  
+  // Snapshot first frame for static mode
+  if (getAvatarMode() === 'static') {
+    requestAnimationFrame(snapshotStaticCanvases);
   }
 }
 
@@ -171,9 +283,7 @@ function handlePlayerClick(id) {
   isProcessingClick = true;
 
   if (isEditMode) {
-    window.Storage.deletePlayer(id);
-    renderRoster();
-    updateGamesLockState();
+    openEditDrawer(id);
   } else {
     window.Storage.togglePlayerActive(id);
     renderRoster();
@@ -318,7 +428,9 @@ function bindDragEvents(el, id) {
   }
 
   el.addEventListener('mousedown', handleDown);
-  el.addEventListener('touchstart', handleDown, { passive: true });
+  el.addEventListener('touchstart', handleDown, {
+    passive: true
+  });
 }
 
 // --- Drawer Logic ---
@@ -327,7 +439,8 @@ function initEmojiGrid() {
   Object.keys(PACKS).forEach(packName => {
     const btn = document.createElement('button');
     btn.className = `pack-pill ${packName === currentPack ? 'active' : ''}`;
-    btn.textContent = packName.replace('_', ' ');
+    btn.textContent = packName.replace('_',
+    ' ');
     btn.addEventListener('click', () => {
       currentPack = packName;
       initEmojiGrid();
@@ -336,7 +449,17 @@ function initEmojiGrid() {
   });
 
   emojiGrid.innerHTML = '';
+
+  // Get emojis already taken by other players
+  const players = window.Storage.getPlayers();
+  const takenEmojis = players
+    .filter(p => p.id !== editingPlayerId) // Allow the player being edited to keep their own
+    .map(p => p.emoji);
+
   PACKS[currentPack].forEach(emoji => {
+    // Skip avatars already chosen by other players
+    if (takenEmojis.includes(emoji)) return;
+
     const btn = document.createElement('button');
     btn.className = `emoji-btn ${emoji === selectedEmoji ? 'is-selected' : ''}`;
 
@@ -359,9 +482,42 @@ function initEmojiGrid() {
 function openDrawer() {
   if (isEditMode) toggleEditMode();
 
+  editingPlayerId = null;
+  drawerTitle.textContent = 'New Player';
+  savePlayerBtn.textContent = 'Add Player';
   playerNameInput.value = '';
   currentPack = 'animated';
   selectedEmoji = PACKS[currentPack][0];
+  initEmojiGrid();
+
+  drawerOverlay.classList.add('is-visible');
+  addPlayerDrawer.classList.add('is-open');
+
+  setTimeout(() => {
+    playerNameInput.focus();
+  }, 300);
+}
+
+function openEditDrawer(id) {
+  const players = window.Storage.getPlayers();
+  const player = players.find(p => p.id === id);
+  if (!player) return;
+
+  editingPlayerId = id;
+  drawerTitle.textContent = 'Edit Player';
+  savePlayerBtn.textContent = 'Save Changes';
+  playerNameInput.value = player.name;
+
+  // Find which pack this emoji belongs to and select it
+  let foundPack = 'animated';
+  for (const [packName, packEmojis] of Object.entries(PACKS)) {
+    if (packEmojis.includes(player.emoji)) {
+      foundPack = packName;
+      break;
+    }
+  }
+  currentPack = foundPack;
+  selectedEmoji = player.emoji;
   initEmojiGrid();
 
   drawerOverlay.classList.add('is-visible');
@@ -376,13 +532,19 @@ function closeDrawer() {
   drawerOverlay.classList.remove('is-visible');
   addPlayerDrawer.classList.remove('is-open');
   playerNameInput.blur(); // dismiss keyboard
+  editingPlayerId = null;
 }
 
-function handleAddPlayer() {
+function handleSavePlayer() {
   const name = playerNameInput.value.trim();
   if (!name) return; // Ignore if empty
 
-  window.Storage.addPlayer(name, selectedEmoji);
+  if (editingPlayerId) {
+    window.Storage.updatePlayer(editingPlayerId, name, selectedEmoji);
+  } else {
+    window.Storage.addPlayer(name, selectedEmoji);
+  }
+
   closeDrawer();
   renderRoster();
   updateGamesLockState();
@@ -391,10 +553,13 @@ function handleAddPlayer() {
 // --- Games Lock Logic ---
 function updateGamesLockState() {
   const activeCount = window.Storage.getActivePlayers().length;
-  const shouldLock = activeCount < 2;
 
   gamesList.forEach(card => {
-    // Only lock implemented games or explicitly lock dummies
+    let shouldLock = activeCount < 2;
+    if (card.id === 'game-grand-prix' && activeCount < 4) {
+      shouldLock = true;
+    }
+
     if (shouldLock) {
       card.classList.add('is-locked');
     } else {
@@ -408,11 +573,24 @@ function setupEventListeners() {
   editBtn.addEventListener('click', toggleEditMode);
   drawerCloseBtn.addEventListener('click', closeDrawer);
   drawerOverlay.addEventListener('click', closeDrawer);
-  savePlayerBtn.addEventListener('click', handleAddPlayer);
+  savePlayerBtn.addEventListener('click', handleSavePlayer);
+
+  // Settings modal
+  const settingsOverlay = document.getElementById('settings-overlay');
+  const settingsCloseBtn = document.getElementById('settings-close-btn');
+  if (settingsBtn && settingsOverlay) {
+    settingsBtn.addEventListener('click', () => {
+      renderSettingsModal();
+      settingsOverlay.classList.add('is-visible');
+    });
+    settingsCloseBtn.addEventListener('click', () => {
+      settingsOverlay.classList.remove('is-visible');
+    });
+  }
 
   // Enter key on input should save
   playerNameInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') handleAddPlayer();
+    if (e.key === 'Enter') handleSavePlayer();
   });
 
   // PWA Buttons
@@ -425,7 +603,9 @@ function setupEventListeners() {
       console.log('installBtn clicked');
       if (deferredPrompt) {
         deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
+        const {
+          outcome
+        } = await deferredPrompt.userChoice;
         if (outcome === 'accepted') {
           deferredPrompt = null;
         }
@@ -436,7 +616,8 @@ function setupEventListeners() {
 
     installNotNowBtn.addEventListener('click', () => {
       console.log('installNotNowBtn clicked');
-      localStorage.setItem('kings-gambit-declined-install', 'true');
+      localStorage.setItem('kings-gambit-declined-install',
+    'true');
       installDrawer.classList.remove('is-open');
       drawerOverlay.classList.remove('is-visible');
     });

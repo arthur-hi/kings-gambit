@@ -16,7 +16,6 @@ const mutinyCards = [
   { text: "biggest hands: the person with the biggest hands drinks.", tags: ['callout'] },
   { text: "banned word: {player}, pick a word that is banned for two rounds. anyone who says it drinks.", tags: ['physical'] },
   { text: "no english: {player}, don't speak english for one round.", tags: ['physical'] },
-  { text: "{player}, kiss {random} on the forehead.", tags: ['spicy'] },
   { text: "pizza or burgers: everyone picks a side. the minority group drinks.", tags: ['social'] },
   { text: "trivia: {player}, ask {right} a question. correct = you drink, wrong = they drink.", tags: ['duel'] },
   { text: "{player}, try to walk in a straight line or drink.", tags: ['physical'] },
@@ -41,7 +40,6 @@ const mutinyCards = [
   { text: "round robin: {player}, take a sip of every player's drink.", tags: ['physical'] },
   { text: "pass the glass: everyone passes their drink to the left. drink your new glass.", tags: ['social'] },
   { text: "even age: if your age is an even number, drink.", tags: ['callout'] },
-  { text: "dance off: {player}, dance until your next turn or down your drink.", tags: ['physical'] },
   { text: "waterfall lite: {player} take a big drink.", tags: ['physical'] },
   { text: "hands up: everyone puts hands in the air. last one drinks.", tags: ['social', 'callout'] },
   { text: "{player}, drink for every letter in your name.", tags: ['physical'] },
@@ -106,8 +104,6 @@ const mutinyCards = [
 
   { text: "", tags: ['cbtm', 'social'] },
   { text: "", tags: ['cbtm', 'social'] },
-  { text: "", tags: ['cbtm', 'social'] },
-  { text: "", tags: ['cbtm', 'social'] },
 
 ];
 
@@ -116,6 +112,31 @@ let currentPlayerIndex = 0;
 let isSpinning = false;
 let deck = [];
 let activeCurse = null;
+
+// Filter state
+const ALL_TAGS = [
+  { key: 'social', label: 'Social', icon: '🎉' },
+  { key: 'duel', label: 'Duel', icon: '⚔️' },
+  { key: 'physical', label: 'Physical', icon: '💪' },
+  { key: 'memory', label: 'Memory', icon: '🧠' },
+  { key: 'spicy', label: 'Spicy', icon: '🌶️' },
+  { key: 'callout', label: 'Callout', icon: '📢' }
+];
+const TAGS_STORAGE_KEY = 'kings-gambit-mutiny-tags';
+
+function getSelectedTags() {
+  try {
+    const data = localStorage.getItem(TAGS_STORAGE_KEY);
+    if (data) return JSON.parse(data);
+  } catch (e) { /* ignore */ }
+  return ALL_TAGS.map(t => t.key); // default: all enabled
+}
+
+function saveSelectedTags(tags) {
+  localStorage.setItem(TAGS_STORAGE_KEY, JSON.stringify(tags));
+}
+
+let selectedTags = getSelectedTags();
 
 // DOM Elements
 const container = document.getElementById('mutiny-container');
@@ -139,6 +160,13 @@ const exitQuitBtn = document.getElementById('exit-quit-btn');
 const curseBanner = document.getElementById('curse-banner');
 const curseText = document.getElementById('curse-text');
 
+// Filter Drawer DOM
+const filterBtn = document.getElementById('filter-btn');
+const filterOverlay = document.getElementById('filter-overlay');
+const filterDrawer = document.getElementById('filter-drawer');
+const filterCloseBtn = document.getElementById('filter-close');
+const filterList = document.getElementById('filter-list');
+
 // CBTM Elements
 const cbtmTimer = document.getElementById('cbtm-timer');
 const cbtmStartBtn = document.getElementById('cbtm-start-btn');
@@ -150,6 +178,51 @@ const cbtmExplanation = document.getElementById('cbtm-explanation');
 const cbtmDoneBtn = document.getElementById('cbtm-done-btn');
 let cbtmInterval = null;
 
+function initTagsForPlayerCount() {
+  const currentCount = activePlayers.length;
+  const lastCount = parseInt(localStorage.getItem('mutiny-last-player-count') || '0', 10);
+
+  if (currentCount === 2 && lastCount !== 2) {
+    // Just transitioned to 2-player mode. Disable group tags.
+    const tagsToDisable = ['social', 'spicy', 'physical'];
+    let changed = false;
+    selectedTags = selectedTags.filter(t => {
+      if (tagsToDisable.includes(t)) {
+        changed = true;
+        return false;
+      }
+      return true;
+    });
+    if (changed) saveSelectedTags(selectedTags);
+  } else if (currentCount > 2 && lastCount > 0 && lastCount <= 2) {
+    // Just transitioned to 3+ players. Enable group tags if they were removed.
+    const tagsToEnable = ['social', 'spicy', 'physical'];
+    let changed = false;
+    tagsToEnable.forEach(tag => {
+      if (!selectedTags.includes(tag)) {
+        selectedTags.push(tag);
+        changed = true;
+      }
+    });
+    if (changed) saveSelectedTags(selectedTags);
+  }
+
+  localStorage.setItem('mutiny-last-player-count', currentCount.toString());
+
+  // Show Toast
+  if (currentCount === 2) {
+    const toastShown = sessionStorage.getItem('mutiny-2p-toast-shown');
+    if (!toastShown) {
+      setTimeout(() => {
+        if (window.UI && window.UI.showToast) {
+          window.UI.showToast("Cards for larger groups are turned off. You can enable them in filters ⚙️");
+        }
+      }, 500);
+      sessionStorage.setItem('mutiny-2p-toast-shown', 'true');
+    }
+  }
+}
+
 function init() {
   activePlayers = window.Storage.getActivePlayers();
   if (activePlayers.length < 2) {
@@ -157,6 +230,8 @@ function init() {
     window.location.href = 'index.html';
     return;
   }
+
+  initTagsForPlayerCount();
 
   // Create an initial shuffled deck stack so it doesn't repeat too fast
   fillDeck();
@@ -170,6 +245,12 @@ function init() {
   backBtn.addEventListener('click', () => exitOverlay.classList.add('is-visible'));
   exitStayBtn.addEventListener('click', () => exitOverlay.classList.remove('is-visible'));
   exitQuitBtn.addEventListener('click', () => window.location.href = 'index.html');
+
+  // Filter drawer events
+  filterBtn.addEventListener('click', openFilterDrawer);
+  filterCloseBtn.addEventListener('click', closeFilterDrawer);
+  filterOverlay.addEventListener('click', closeFilterDrawer);
+  renderFilterDrawer();
 
   const playerTag = document.querySelector('#mutiny-card .modal-player-tag');
 
@@ -228,16 +309,16 @@ function init() {
 }
 
 function fillDeck() {
-  const excludedTags = [];
-  if (activePlayers.length === 2) {
-    excludedTags.push('social');
-    excludedTags.push('spicy');
-    excludedTags.push('physical');
-    console.log("excluded tags: " + excludedTags)
-  }
+  // Tags disabled by the user
+  const disabledTags = ALL_TAGS
+    .map(t => t.key)
+    .filter(tag => !selectedTags.includes(tag));
 
   deck = mutinyCards.filter(card => {
-    return !card.tags.some(tag => excludedTags.includes(tag));
+    // Never filter out persistent or cbtm cards unless their other tags are all excluded
+    const filterableTags = card.tags.filter(t => t !== 'persistent' && t !== 'cbtm');
+    if (filterableTags.length === 0) return true;
+    return !filterableTags.every(tag => disabledTags.includes(tag));
   });
 
   // Shuffle
@@ -417,6 +498,60 @@ function triggerFlashIfGroup(text) {
   } else if (lower.includes('loser drinks')) {
     container.classList.add('flash-red');
   }
+}
+
+// --- Filter Drawer ---
+function openFilterDrawer() {
+  filterOverlay.classList.add('is-visible');
+  filterDrawer.classList.add('is-open');
+}
+
+function closeFilterDrawer() {
+  filterOverlay.classList.remove('is-visible');
+  filterDrawer.classList.remove('is-open');
+}
+
+function renderFilterDrawer() {
+  filterList.innerHTML = '';
+
+  ALL_TAGS.forEach(tag => {
+    const row = document.createElement('div');
+    row.className = 'filter-tag-row';
+
+    const label = document.createElement('span');
+    label.className = 'filter-tag-label';
+    label.innerHTML = `<span class="filter-tag-icon">${tag.icon}</span> ${tag.label}`;
+
+    const toggle = document.createElement('label');
+    toggle.className = 'toggle-switch';
+
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.checked = selectedTags.includes(tag.key);
+
+    const slider = document.createElement('span');
+    slider.className = 'toggle-slider';
+
+    input.addEventListener('change', () => {
+      if (input.checked) {
+        if (!selectedTags.includes(tag.key)) {
+          selectedTags.push(tag.key);
+        }
+      } else {
+        selectedTags = selectedTags.filter(t => t !== tag.key);
+      }
+      saveSelectedTags(selectedTags);
+      fillDeck();
+      if (navigator.vibrate) navigator.vibrate(30);
+    });
+
+    toggle.appendChild(input);
+    toggle.appendChild(slider);
+
+    row.appendChild(label);
+    row.appendChild(toggle);
+    filterList.appendChild(row);
+  });
 }
 
 // Start

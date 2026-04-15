@@ -16,6 +16,7 @@
   <div id="mutiny-container" class="mutiny-container">
     <nav class="game-nav">
       <button id="back-btn" class="game-nav-back">✕</button>
+      <button id="filter-btn" class="game-nav-filter">⚙</button>
     </nav>
 
     <div id="curse-banner" class="curse-banner" style="display: none;">
@@ -49,8 +50,8 @@
           finish
           your drink.
           <br><br>
-          Example: “pre-ing at grandpa’s with the boys, cheap drinks, great company, and he’s in bed by 9pm perfect for
-          the boys to then go out”
+          Example: "pre-ing at grandpa's with the boys, cheap drinks, great company, and he's in bed by 9pm perfect for
+          the boys to then go out"
         </div>
         <button id="cbtm-start-btn" class="btn-3d"
           style="display: none; background-color: #92400e; margin-bottom: 16px;">START PITCH</button>
@@ -83,6 +84,18 @@
         <span id="turn-name">Capt. Alex's turn</span>
       </div>
     </footer>
+  </div>
+
+  <!-- Filter Drawer -->
+  <div id="filter-overlay" class="drawer-overlay"></div>
+  <div id="filter-drawer" class="drawer filter-drawer">
+    <div class="drawer-header">
+      <h2>Card Filters</h2>
+      <button id="filter-close" class="drawer-close">✕</button>
+    </div>
+    <div id="filter-list" class="filter-list">
+      <!-- Populated via JS -->
+    </div>
   </div>
 
   <script src="js/storage.js?v=1.1"></script>

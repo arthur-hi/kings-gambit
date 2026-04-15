@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>The Grand Prix - Kings Gambit</title>
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/styles.css?v=1.1">
+</head>
+
+<body style="background-color: #0f172a;">
+
+  <div id="grand-prix-container" class="gp-container">
+    <nav class="game-nav">
+      <button id="back-btn" class="game-nav-back">✕</button>
+    </nav>
+
+    <!-- Phase 1 Layout Scaffolding -->
+    
+    <div id="intro-sequence" class="gp-panel gp-active">
+      <h1 class="gp-title">THE GRAND PRIX</h1>
+      <p class="gp-subtitle">A 5-lap minigame circuit</p>
+      
+      <div id="gp-history-container" style="margin: 24px 0 16px; width: 100%;"></div>
+      
+      <button id="start-gp-btn" class="btn-3d btn-primary">START CIRCUIT</button>
+    </div>
+
+    <!-- Phase 2 Starting Grid -->
+    <div id="starting-grid" class="gp-panel" style="display: none;">
+      <!-- Populated via JS -->
+    </div>
+
+    <div id="ladder-standings" class="gp-panel" style="display: none;">
+      <h2 class="gp-heading">STANDINGS</h2>
+      <p id="gp-narrator" class="rule-text" style="height: 48px; margin-bottom: 16px; color: var(--color-timing); font-weight: 900; font-style: italic; transition: opacity 0.2s; display:flex; align-items:center; justify-content:center;"></p>
+      <div id="ladder-list" class="ladder-list"></div>
+      <button id="ladder-next-btn" class="btn-3d btn-primary" style="margin-top: 24px; display: none;">NEXT LAP</button>
+    </div>
+
+    <!-- This overlay is part of Phase 3, keeping it ready here -->
+    <div id="turn-pass-screen" class="rule-overlay">
+      <div class="rule-card gp-kerb">
+        <h2 id="pass-title" class="rule-title">PASS TO</h2>
+        <p id="pass-player-name" class="rule-text gp-pass-name">PLAYER</p>
+        <p id="pass-action-text" class="rule-subtext">Get ready for the next minigame!</p>
+        <button id="pass-ready-btn" class="btn-3d mt-4">I'M READY</button>
+      </div>
+    </div>
+
+    <!-- Where the individual and team games take place -->
+    <div id="minigame-arena" class="gp-panel gp-arena bg-checkered" style="display: none;">
+      <!-- Content shifts depending on the queue -->
+    </div>
+
+    <!-- The final podium sequence -->
+    <div id="podium-reveal" class="gp-panel" style="display: none;">
+      <h1 class="gp-title" style="margin-bottom: 40px;">PODIUM</h1>
+      <div id="podium-container" class="podium-container"></div>
+      <div id="podium-losers" class="podium-losers"></div>
+      <div class="gp-buttons" style="margin-top: 32px; display: flex; gap: 16px; flex-direction: column;">
+        <button id="gp-replay-btn" class="btn-3d btn-primary">PLAY AGAIN</button>
+        <button id="gp-lobby-btn" class="btn-3d secondary">RETURN TO LOBBY</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Exit Modal -->
+  <div id="exit-overlay" class="rule-overlay" style="z-index:9999;">
+    <div class="rule-card gp-panel" style="text-align: center;">
+      <h2 class="gp-heading" style="color:#ef4444;">RETIRE CAR?</h2>
+      <p class="gp-subtitle" style="margin-bottom:24px;">are you sure you want to end the game?</p>
+      <button id="exit-stay-btn" class="btn-3d btn-primary" style="margin-bottom:12px;">KEEP RACING</button>
+      <br>
+      <button id="exit-quit-btn" class="btn-3d" style="background:#ef4444; color:white;">BOX, BOX (QUIT)</button>
+    </div>
+  </div>
+
+  <script src="js/packs.js?v=1.1"></script>
+  <script src="js/storage.js?v=1.1"></script>
+  <script src="js/grand-prix.js?v=1.1"></script>
+</body>
+
+</html>

@@ -16,13 +16,20 @@
 
   <!-- Header -->
   <header class="app-header">
-    <h1 class="app-title">Kings Gambit</h1>
-    <button id="edit-btn" class="edit-btn">Edit</button>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <img src="icon.png" alt="Icon" style="width: 32px; height: 32px; border-radius: 8px;">
+      <h1 class="app-title">Kings Gambit</h1>
+    </div>
+    <button id="settings-btn" class="edit-btn" style="font-size:1.5rem; display:flex; align-items:center; justify-content:center;">⚙️</button>
   </header>
 
   <!-- Player Roster -->
   <main>
     <section class="roster-container">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
+        <h2 style="font-size: 1.5rem; font-weight: 900;">Players</h2>
+        <button id="edit-btn" class="edit-btn" style="margin: 0; padding: 4px 8px;">Edit</button>
+      </div>
       <div id="zero-state-welcome" style="display: none; text-align: center; padding: 24px 0;">
         <h2 style="font-size: 1.5rem; margin-bottom: 8px;">Welcome to Kings Gambit.</h2>
         <p style="color: var(--color-text-muted); margin-bottom: 24px;">add at least two players to unlock the games.</p>
@@ -60,6 +67,12 @@
         <h3 class="game-card-title">Mutiny</h3>
         <p class="game-card-desc">Spin the coin for drinking prompts.</p>
       </a>
+
+      <!-- Grand Prix Game Card -->
+      <a href="grand-prix.html" id="game-grand-prix" class="game-card is-locked">
+        <h3 class="game-card-title">The Grand Prix</h3>
+        <p class="game-card-desc">A 5-round minigame circuit.</p>
+      </a>
     </section>
   </main>
 
@@ -67,7 +80,7 @@
   <div id="drawer-overlay" class="drawer-overlay"></div>
   <div id="add-player-drawer" class="drawer">
     <div class="drawer-header">
-      <h2>New Player</h2>
+      <h2 id="drawer-title">New Player</h2>
       <button id="drawer-close" class="drawer-close">✕</button>
     </div>
 
@@ -95,8 +108,33 @@
       <button id="install-btn" class="btn-3d btn-primary" style="margin-bottom: 12px; display: block; width: 100%;">Install App</button>
       <button id="install-not-now-btn" class="btn-3d secondary" style="display: block; width: 100%;">Not Now</button>
     </div>
+    </div>
   </div>
 
+  <!-- Remove Player Modal -->
+  <div id="remove-overlay" class="rule-overlay" style="z-index: 10000;">
+    <div class="rule-card" style="text-align: center;">
+      <h2 class="rule-title" style="color: #ef4444;">Remove Player?</h2>
+      <p class="rule-text" id="remove-player-name-text">Are you sure?</p>
+      <button id="remove-cancel-btn" class="btn-3d mt-4">CANCEL</button>
+      <br>
+      <button id="remove-confirm-btn" class="btn-3d mt-2 secondary">YES, REMOVE</button>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-overlay" class="rule-overlay" style="z-index: 10000;">
+    <div class="rule-card" style="text-align: left; max-height: 85vh; overflow-y: auto;">
+      <h2 class="rule-title" style="text-align: center; margin-bottom: 24px;">Settings</h2>
+      
+      <p style="font-size: 0.75rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 12px; font-weight: 700;">Avatar Animation</p>
+      <div id="settings-content" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;"></div>
+      
+      <button id="settings-close-btn" class="btn-3d btn-primary" style="width:100%;">DONE</button>
+    </div>
+  </div>
+
+  <script src="js/packs.js?v=1.1"></script>
   <script src="js/storage.js?v=1.1"></script>
   <script src="js/app.js?v=1.1"></script>
 </body>
