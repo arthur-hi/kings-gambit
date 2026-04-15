@@ -578,6 +578,7 @@ function setupEventListeners() {
   // Settings modal
   const settingsOverlay = document.getElementById('settings-overlay');
   const settingsCloseBtn = document.getElementById('settings-close-btn');
+  const clearGPBtn = document.getElementById('clear-gp-btn');
   if (settingsBtn && settingsOverlay) {
     settingsBtn.addEventListener('click', () => {
       renderSettingsModal();
@@ -585,6 +586,12 @@ function setupEventListeners() {
     });
     settingsCloseBtn.addEventListener('click', () => {
       settingsOverlay.classList.remove('is-visible');
+    });
+  }
+  if (clearGPBtn) {
+    clearGPBtn.addEventListener('click', () => {
+      window.Storage.clearGPStats();
+      window.UI.showToast('Grand Prix history cleared! 🏁');
     });
   }
 

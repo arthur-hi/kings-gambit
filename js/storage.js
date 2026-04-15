@@ -98,6 +98,14 @@ function recordGPMatch(sortedPlayers, finalScores, finalDrinks) {
   saveGPStats(stats);
 }
 
+function clearGPStats() {
+  try {
+    localStorage.removeItem(STORAGE_GP_KEY);
+  } catch (e) {
+    console.error('Failed to clear GP stats', e);
+  }
+}
+
 // Make globally available for inline scripts
 window.Storage = {
   getPlayers,
@@ -108,7 +116,8 @@ window.Storage = {
   updatePlayer,
   getActivePlayers,
   getGPStats,
-  recordGPMatch
+  recordGPMatch,
+  clearGPStats
 };
 
 // --- Toast UI ---
