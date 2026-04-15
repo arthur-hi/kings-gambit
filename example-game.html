@@ -4,32 +4,826 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>The Handshake - Kings Gambit</title>
+  <meta name="description" content="The Handshake — a high-stakes drinking game of elimination and luck.">
   <link rel="icon" type="image/png" href="icon.png">
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=1.2">
+  <style>
+    /* ── Handshake-specific vars ── */
+    :root {
+      --hs-bg:        #0d0d0d;
+      --hs-surface:   #1a1a1a;
+      --hs-border:    #2a2a2a;
+      --hs-gold:      #facc15;
+      --hs-gold-dark: #ca8a04;
+      --hs-red:       #ef4444;
+      --hs-red-dark:  #991b1b;
+      --hs-green:     #22c55e;
+      --hs-muted:     #52525b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--hs-bg);
+      color: #f5f5f5;
+      min-height: 100vh;
+      max-width: 600px;
+      margin: 0 auto;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ── Layout ── */
+    .hs-screen {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 20px 40px;
+    }
+
+    .hs-screen.hidden { display: none; }
+
+    /* ── Nav ── */
+    .hs-nav {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0 0;
+    }
+
+    .hs-back {
+      background: none;
+      border: none;
+      font-size: 1.8rem;
+      color: var(--hs-muted);
+      cursor: pointer;
+      padding: 8px;
+      transition: color 0.15s;
+    }
+    .hs-back:active { color: #fff; }
+
+    .hs-round-badge {
+      font-size: 0.85rem;
+      font-weight: 900;
+      color: var(--hs-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ── Intro Screen ── */
+    .hs-intro-header {
+      text-align: center;
+    }
+
+    .hs-intro-icon {
+      font-size: 5rem;
+      display: block;
+      margin-bottom: 16px;
+      animation: hsPulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes hsPulse {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0px rgba(250,204,21,0)); }
+      50%       { transform: scale(1.08); filter: drop-shadow(0 0 20px rgba(250,204,21,0.5)); }
+    }
+
+    .hs-title {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--hs-gold);
+      text-transform: uppercase;
+      letter-spacing: -2px;
+      text-shadow: 0 4px 20px rgba(250,204,21,0.3);
+      margin-bottom: 8px;
+    }
+
+    .hs-subtitle {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--hs-muted);
+      line-height: 1.5;
+      margin-bottom: 40px;
+    }
+
+    /* Rules cards */
+    .hs-rules {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 36px;
+    }
+
+    .hs-rule-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      background: var(--hs-surface);
+      border: 1px solid var(--hs-border);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+
+    .hs-rule-icon {
+      font-size: 1.4rem;
+      flex-shrink: 0;
+      line-height: 1;
+      margin-top: 2px;
+    }
+
+    .hs-rule-text {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #a1a1aa;
+      line-height: 1.5;
+    }
+
+    .hs-rule-text strong { color: #f5f5f5; }
+
+    .hs-start-btn {
+      width: 100%;
+      max-width: 320px;
+      padding: 18px 24px;
+      background: linear-gradient(135deg, var(--hs-gold), #f59e0b);
+      color: #000;
+      font-family: inherit;
+      font-weight: 900;
+      font-size: 1.3rem;
+      border: none;
+      border-radius: 18px;
+      cursor: pointer;
+      box-shadow: 0 6px 0 var(--hs-gold-dark), 0 10px 30px rgba(250,204,21,0.2);
+      transition: transform 0.1s, box-shadow 0.1s;
+      letter-spacing: 1px;
+    }
+    .hs-start-btn:active {
+      transform: translateY(6px);
+      box-shadow: 0 0 0 var(--hs-gold-dark), 0 0 20px rgba(250,204,21,0.1);
+    }
+
+    /* ── Player Grid (intro) ── */
+    .hs-player-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      margin-bottom: 32px;
+    }
+
+    .hs-player-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--hs-surface);
+      border: 2px solid var(--hs-border);
+      border-radius: 50px;
+      padding: 6px 14px 6px 6px;
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+
+    .hs-chip-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--hs-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .hs-chip-avatar img {
+      width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
+      pointer-events: none; -webkit-user-drag: none;
+    }
+
+    /* ── Game Screen ── */
+    .hs-game-screen {
+      width: 100%;
+    }
+
+    /* Survivor row */
+    .hs-survivor-bar {
+      width: 100%;
+      background: var(--hs-surface);
+      border-radius: 16px;
+      border: 1px solid var(--hs-border);
+      padding: 14px 16px;
+      margin-bottom: 24px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      min-height: 66px;
+      align-items: center;
+    }
+
+    .hs-survivor-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(250,204,21,0.08);
+      border: 2px solid rgba(250,204,21,0.25);
+      border-radius: 50px;
+      padding: 4px 10px 4px 4px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #fde68a;
+      transition: all 0.3s ease;
+    }
+
+    .hs-survivor-chip.eliminated {
+      background: rgba(239,68,68,0.08);
+      border-color: rgba(239,68,68,0.3);
+      color: var(--hs-muted);
+      text-decoration: line-through;
+      opacity: 0.5;
+      transform: scale(0.92);
+    }
+
+    .hs-survivor-chip.warned {
+      background: rgba(249,115,22,0.15);
+      border-color: rgba(249,115,22,0.6);
+      color: #fb923c;
+      animation: warnedPulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes warnedPulse {
+      0%, 100% { box-shadow: 0 0 0px rgba(249,115,22,0); }
+      50%       { box-shadow: 0 0 10px rgba(249,115,22,0.5); }
+    }
+
+    .hs-survivor-avatar {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: var(--hs-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; overflow: hidden; flex-shrink: 0;
+    }
+    .hs-survivor-avatar img {
+      width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
+      pointer-events: none; -webkit-user-drag: none;
+    }
+
+    /* ── Roulette Wheel ── */
+    .hs-wheel-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 28px;
+      position: relative;
+    }
+
+    .hs-wheel-label {
+      font-size: 0.75rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--hs-muted);
+      margin-bottom: 20px;
+    }
+
+    .hs-wheel-outer {
+      position: relative;
+      width: 240px;
+      height: 240px;
+    }
+
+    .hs-wheel-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 4px solid var(--hs-border);
+      background: var(--hs-surface);
+      box-shadow: 0 0 0 8px rgba(0,0,0,0.5), inset 0 0 30px rgba(0,0,0,0.8);
+      overflow: hidden;
+    }
+
+    .hs-wheel-inner {
+      position: absolute;
+      inset: 20%;
+      border-radius: 50%;
+      background: var(--hs-bg);
+      border: 3px solid var(--hs-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.8rem;
+      z-index: 5;
+      overflow: hidden;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+      transition: font-size 0.2s;
+    }
+
+    .hs-wheel-inner img {
+      width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
+      pointer-events: none; -webkit-user-drag: none;
+    }
+
+    /* Needle / pointer */
+    .hs-needle {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 24px solid var(--hs-gold);
+      filter: drop-shadow(0 2px 6px rgba(250,204,21,0.6));
+      z-index: 10;
+    }
+
+    /* Wheel canvas segments */
+    #hs-wheel-canvas {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+    }
+
+    /* Spin button */
+    .hs-spin-btn {
+      position: absolute;
+      inset: 50%;
+      transform: translate(-50%, -50%);
+      width: 68px; height: 68px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--hs-gold), #f59e0b);
+      border: 4px solid #000;
+      font-family: inherit;
+      font-weight: 900;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(250,204,21,0.4);
+      transition: transform 0.1s, box-shadow 0.1s;
+      z-index: 10;
+      color: #000;
+    }
+    .hs-spin-btn:active {
+      transform: translate(-50%, -50%) scale(0.9);
+      box-shadow: 0 2px 8px rgba(250,204,21,0.2);
+    }
+    .hs-spin-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* ── Result Panel ── */
+    .hs-result-panel {
+      width: 100%;
+      background: var(--hs-surface);
+      border-radius: 20px;
+      border: 2px solid var(--hs-border);
+      padding: 24px 20px;
+      text-align: center;
+      min-height: 160px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .hs-result-panel.is-drink {
+      border-color: var(--hs-red);
+      box-shadow: 0 0 30px rgba(239,68,68,0.2);
+    }
+
+    .hs-result-panel.is-safe {
+      border-color: var(--hs-green);
+      box-shadow: 0 0 30px rgba(34,197,94,0.15);
+    }
+
+    .hs-result-panel.is-winner {
+      border-color: var(--hs-gold);
+      box-shadow: 0 0 40px rgba(250,204,21,0.3);
+    }
+
+    .hs-result-idle-text {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--hs-muted);
+    }
+
+    .hs-result-avatar-large {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: var(--hs-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3rem;
+      overflow: hidden;
+      border: 4px solid;
+    }
+    .hs-result-avatar-large img {
+      width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
+      pointer-events: none;
+    }
+    .hs-result-avatar-large.drink { border-color: var(--hs-red); }
+    .hs-result-avatar-large.safe  { border-color: var(--hs-green); }
+    .hs-result-avatar-large.winner { border-color: var(--hs-gold); }
+
+    .hs-result-name {
+      font-size: 2rem;
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
+    .hs-result-name.drink  { color: var(--hs-red); }
+    .hs-result-name.safe   { color: var(--hs-green); }
+    .hs-result-name.winner { color: var(--hs-gold); }
+
+    .hs-result-verdict {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #a1a1aa;
+    }
+
+    .hs-result-drinks-badge {
+      background: var(--hs-red);
+      color: #fff;
+      padding: 6px 18px;
+      border-radius: 50px;
+      font-weight: 900;
+      font-size: 1.1rem;
+    }
+
+    /* ── Next Turn Button ── */
+    .hs-next-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--hs-surface);
+      border: 2px solid var(--hs-border);
+      border-radius: 16px;
+      color: #f5f5f5;
+      font-family: inherit;
+      font-weight: 900;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+      letter-spacing: 0.5px;
+    }
+    .hs-next-btn:active { transform: scale(0.97); background: #222; }
+    .hs-next-btn.hidden { display: none; }
+
+    /* ── Drink count bar ── */
+    .hs-drink-bar {
+      width: 100%;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .hs-drink-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--hs-surface);
+      border: 1px solid var(--hs-border);
+      border-radius: 50px;
+      padding: 4px 10px 4px 4px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #a1a1aa;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .hs-drink-pip {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--hs-red);
+      flex-shrink: 0;
+    }
+
+    /* ── Winner Screen ── */
+    .hs-winner-screen {
+      text-align: center;
+    }
+
+    .hs-winner-crown {
+      font-size: 5rem;
+      display: block;
+      margin-bottom: 16px;
+      animation: crownDrop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    }
+
+    @keyframes crownDrop {
+      from { transform: translateY(-80px) rotate(-15deg); opacity: 0; }
+      to   { transform: translateY(0) rotate(0deg); opacity: 1; }
+    }
+
+    .hs-winner-avatar {
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: var(--hs-border);
+      border: 6px solid var(--hs-gold);
+      box-shadow: 0 0 40px rgba(250,204,21,0.5);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 4rem;
+      margin: 0 auto 20px;
+      overflow: hidden;
+      animation: winnerPop 0.5s 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    }
+    .hs-winner-avatar img {
+      width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
+      pointer-events: none;
+    }
+
+    @keyframes winnerPop {
+      from { transform: scale(0.5); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+
+    .hs-winner-title {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--hs-gold);
+      text-transform: uppercase;
+      letter-spacing: -1px;
+      margin-bottom: 6px;
+    }
+
+    .hs-winner-name {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #f5f5f5;
+      margin-bottom: 8px;
+    }
+
+    .hs-winner-subtitle {
+      font-size: 1rem;
+      color: var(--hs-muted);
+      font-weight: 700;
+      margin-bottom: 40px;
+    }
+
+    .hs-loser-list {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 36px;
+    }
+
+    .hs-loser-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--hs-surface);
+      border: 1px solid var(--hs-border);
+      border-radius: 14px;
+      padding: 12px 16px;
+    }
+
+    .hs-loser-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hs-loser-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      background: var(--hs-border);
+      overflow: hidden;
+    }
+    .hs-loser-avatar img {
+      width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .hs-loser-name {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #a1a1aa;
+    }
+
+    .hs-loser-drinks {
+      font-size: 0.9rem;
+      font-weight: 900;
+      color: var(--hs-red);
+    }
+
+    /* ── Play again btn ── */
+    .hs-play-again-btn {
+      width: 100%;
+      max-width: 300px;
+      padding: 16px 24px;
+      background: linear-gradient(135deg, var(--hs-gold), #f59e0b);
+      color: #000;
+      font-family: inherit;
+      font-weight: 900;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      box-shadow: 0 5px 0 var(--hs-gold-dark);
+      transition: transform 0.1s, box-shadow 0.1s;
+      margin-bottom: 12px;
+    }
+    .hs-play-again-btn:active {
+      transform: translateY(5px);
+      box-shadow: 0 0 0 var(--hs-gold-dark);
+    }
+
+    .hs-lobby-btn {
+      width: 100%;
+      max-width: 300px;
+      padding: 14px 24px;
+      background: transparent;
+      color: var(--hs-muted);
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 1rem;
+      border: 2px solid var(--hs-border);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .hs-lobby-btn:active { color: #fff; border-color: #888; }
+
+    /* Confetti pieces */
+    .hs-confetti {
+      position: fixed;
+      top: -20px;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      animation: confettiFall linear forwards;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    @keyframes confettiFall {
+      from { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      to   { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* ── Exit overlay ── */
+    #hs-exit-overlay {
+      z-index: 9999;
+    }
+
+    .hs-exit-card {
+      background: var(--hs-surface);
+      border: 2px solid var(--hs-border);
+      border-radius: 24px;
+      padding: 32px 24px;
+      text-align: center;
+      width: 100%;
+      max-width: 380px;
+    }
+
+    .hs-exit-title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--hs-red);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .hs-exit-sub {
+      font-size: 1rem;
+      color: var(--hs-muted);
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+  </style>
 </head>
 <body>
 
-  <main class="game-view">
-    <nav class="game-nav">
-      <button id="back-btn" class="game-nav-back" onclick="window.location.href='index.html'">✕</button>
+  <!-- ────────────────────────────────────
+       INTRO SCREEN
+       ──────────────────────────────────── -->
+  <div id="hs-intro" class="hs-screen">
+    <nav class="hs-nav">
+      <button class="hs-back" id="hs-intro-back">✕</button>
+      <span></span>
     </nav>
-    
-    <div class="game-center">
-      <div id="roster-preview" class="roster-preview">
-        <!-- Emojis populated by JS -->
+
+    <div class="hs-intro-header">
+      <span class="hs-intro-icon">🤝</span>
+      <h1 class="hs-title">The Handshake</h1>
+      <p class="hs-subtitle">One survives. Everyone else drinks.</p>
+    </div>
+
+    <div id="hs-intro-players" class="hs-player-grid">
+      <!-- Populated via JS -->
+    </div>
+
+    <div class="hs-rules">
+      <div class="hs-rule-item">
+        <span class="hs-rule-icon">🎡</span>
+        <p class="hs-rule-text">The wheel spins and lands on a player. They drink 1 sip and glow <strong>orange — on notice</strong>.</p>
       </div>
-      
-      <button id="drink-btn" class="btn-3d">WHO DRINKS?</button>
-      
-      <div id="result-display" class="giant-result">
-        <!-- Result goes here -->
+      <div class="hs-rule-item">
+        <span class="hs-rule-icon">💀</span>
+        <p class="hs-rule-text">If the wheel lands on the <strong>same player back-to-back</strong>, they're <strong>eliminated</strong> and must drink twice. Anyone else in between clears the notice.</p>
+      </div>
+      <div class="hs-rule-item">
+        <span class="hs-rule-icon">🏆</span>
+        <p class="hs-rule-text">Last player standing wins. Everyone else checks their drink tally.</p>
       </div>
     </div>
-  </main>
 
-  <script src="js/storage.js"></script>
-  <script src="js/game.js"></script>
+    <button id="hs-start-btn" class="hs-start-btn">⚡ START</button>
+  </div>
+
+  <!-- ────────────────────────────────────
+       GAME SCREEN
+       ──────────────────────────────────── -->
+  <div id="hs-game" class="hs-screen hidden">
+    <nav class="hs-nav">
+      <button class="hs-back" id="hs-game-back">✕</button>
+      <span class="hs-round-badge" id="hs-round-label">Round 1</span>
+    </nav>
+
+    <!-- Survivor chips -->
+    <div id="hs-survivor-bar" class="hs-survivor-bar">
+      <!-- Populated via JS -->
+    </div>
+
+    <!-- Wheel -->
+    <div class="hs-wheel-section">
+      <div class="hs-wheel-label" id="hs-wheel-instruction">Who's next?</div>
+      <div class="hs-wheel-outer">
+        <div class="hs-needle"></div>
+        <div class="hs-wheel-ring">
+          <canvas id="hs-wheel-canvas" width="240" height="240"></canvas>
+        </div>
+        <div class="hs-wheel-inner" id="hs-wheel-center">🤝</div>
+        <button id="hs-spin-btn" class="hs-spin-btn">SPIN</button>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="hs-result-panel" id="hs-result-panel">
+      <p class="hs-result-idle-text">Spin the wheel to find the next victim...</p>
+    </div>
+
+    <!-- Next turn / continue -->
+    <button class="hs-next-btn hidden" id="hs-next-btn">Next Turn →</button>
+
+    <!-- Drink tally -->
+    <div class="hs-drink-bar" id="hs-drink-bar">
+      <!-- Populated via JS -->
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────
+       WINNER SCREEN
+       ──────────────────────────────────── -->
+  <div id="hs-winner" class="hs-screen hidden">
+    <nav class="hs-nav">
+      <button class="hs-back" id="hs-winner-back">✕</button>
+      <span></span>
+    </nav>
+
+    <div class="hs-winner-screen" style="width:100%;">
+      <span class="hs-winner-crown">👑</span>
+      <div class="hs-winner-avatar" id="hs-winner-avatar"></div>
+      <h2 class="hs-winner-title">Last Standing</h2>
+      <p class="hs-winner-name" id="hs-winner-name">Player</p>
+      <p class="hs-winner-subtitle">Didn't spill a drop 🥂</p>
+
+      <div class="hs-loser-list" id="hs-loser-list">
+        <!-- Populated via JS -->
+      </div>
+
+      <button class="hs-play-again-btn" id="hs-play-again">🔁 Play Again</button>
+      <button class="hs-lobby-btn" id="hs-to-lobby">← Back to Lobby</button>
+    </div>
+  </div>
+
+  <!-- ── Exit Modal ── -->
+  <div id="hs-exit-overlay" class="rule-overlay">
+    <div class="hs-exit-card">
+      <h2 class="hs-exit-title">Quit?</h2>
+      <p class="hs-exit-sub">The handshake is unfinished...</p>
+      <button id="hs-exit-stay" class="hs-start-btn" style="margin-bottom:12px;">Keep Playing</button>
+      <br>
+      <button id="hs-exit-quit" class="hs-lobby-btn" style="margin-top:8px;">Yes, Leave</button>
+    </div>
+  </div>
+
+  <script src="js/storage.js?v=1.2"></script>
+  <script src="js/game.js?v=1.2"></script>
 </body>
 </html>

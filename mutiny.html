@@ -8,12 +8,465 @@
   <link rel="icon" type="image/png" href="icon.png">
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/styles.css?v=1.1">
+  <link rel="stylesheet" href="css/styles.css?v=1.3">
+
+  <style>
+    /* ════════════════════════════════════════
+       MUTINY — GAME VISUAL OVERHAUL
+       ════════════════════════════════════════ */
+
+    body { background-color: #020a18; }
+
+    /* ── 3D Coin ─────────────────────────────── */
+
+    .mutiny-coin-scene {
+      perspective: 700px;
+      perspective-origin: 50% 30%;
+      display: inline-block;
+      position: relative;
+    }
+
+    .mutiny-coin {
+      width: 168px;
+      height: 168px;
+      transform-style: preserve-3d;
+      cursor: pointer;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      animation: coinIdle 3.2s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    @keyframes coinIdle {
+      0%, 100% { transform: translateY(0px)   rotateX(4deg);  }
+      50%       { transform: translateY(-18px) rotateX(12deg); }
+    }
+
+    .mutiny-coin.spin-fast {
+      animation: coinFlip 1.4s ease-out forwards;
+    }
+
+    @keyframes coinFlip {
+      0%   { transform: translateZ(0)      translateY(0)     rotateY(0deg);    }
+      50%  { transform: translateZ(110px)  translateY(-52px) rotateY(1080deg); }
+      100% { transform: translateZ(0)      translateY(0)     rotateY(1800deg); }
+    }
+
+    /* Glow is a SEPARATE element so it never triggers coin repaints */
+    .mutiny-coin-glow {
+      position: absolute;
+      inset: -14px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(250,204,21,0.28) 0%, transparent 68%);
+      animation: glowPulse 3.2s ease-in-out infinite;
+      pointer-events: none;
+      will-change: opacity, transform;
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { opacity: 0.35; transform: scale(1);    }
+      50%       { opacity: 1;    transform: scale(1.25); }
+    }
+
+    .mutiny-coin-face {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* ── Front face (Skull) ── */
+    .mutiny-coin-heads {
+      background:
+        radial-gradient(circle at 32% 26%, rgba(255,253,210,0.9) 0%, #fde047 12%,
+          #facc15 36%, #ca8a04 64%, #92400e 100%);
+      border: 7px solid #78350f;
+      box-shadow:
+        inset 0 10px 18px rgba(255,255,255,0.38),
+        inset 0 -10px 18px rgba(0,0,0,0.38),
+        inset 0 0 0 16px rgba(120,53,15,0.1);
+    }
+    /* Engraved inner ring */
+    .mutiny-coin-heads::before {
+      content: '';
+      position: absolute;
+      inset: 13px;
+      border-radius: 50%;
+      border: 2.5px solid rgba(120,53,15,0.4);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
+      pointer-events: none;
+      z-index: 1;
+    }
+    /* Specular highlight */
+    .mutiny-coin-heads::after {
+      content: '';
+      position: absolute;
+      top: 7%;
+      left: 8%;
+      width: 38%;
+      height: 38%;
+      background: radial-gradient(circle, rgba(255,255,255,0.52) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ── Back face (Anchor) ── */
+    .mutiny-coin-tails {
+      background:
+        radial-gradient(circle at 68% 74%, rgba(255,240,150,0.45) 0%,
+          #d97706 22%, #92400e 58%, #451a03 100%);
+      border: 7px solid #451a03;
+      box-shadow:
+        inset 0 -10px 18px rgba(255,255,255,0.18),
+        inset 0 10px 18px rgba(0,0,0,0.45);
+      transform: rotateY(180deg);
+    }
+    .mutiny-coin-tails::before {
+      content: '';
+      position: absolute;
+      inset: 13px;
+      border-radius: 50%;
+      border: 2.5px solid rgba(69,26,3,0.5);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .mutiny-coin-symbol {
+      font-size: 4.8rem;
+      line-height: 1;
+      position: relative;
+      z-index: 2;
+      filter: drop-shadow(0 3px 8px rgba(0,0,0,0.55));
+      user-select: none;
+      pointer-events: none;
+    }
+
+    /* Floating shadow blob */
+    .mutiny-coin-shadow-blob {
+      position: absolute;
+      bottom: -28px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 130px;
+      height: 22px;
+      background: radial-gradient(ellipse, rgba(0,0,0,0.5) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: shadowBob 3.2s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes shadowBob {
+      0%, 100% { transform: translateX(-50%) scale(1);   opacity: 0.5;  }
+      50%       { transform: translateX(-50%) scale(0.55); opacity: 0.18; }
+    }
+
+    /* ── Shockwave ring on landing ── */
+    .mutiny-shockwave {
+      position: absolute;
+      width: 168px;
+      height: 168px;
+      top: 0; left: 0;
+      border-radius: 50%;
+      border: 4px solid rgba(250,204,21,0.8);
+      pointer-events: none;
+      z-index: 20;
+      animation: shockwaveRing 0.7s ease-out forwards;
+    }
+
+    @keyframes shockwaveRing {
+      0%   { transform: scale(1);   opacity: 1;   border-width: 4px; }
+      55%  { transform: scale(2.2); opacity: 0.3; border-width: 2px; }
+      100% { transform: scale(3);   opacity: 0;   border-width: 1px; }
+    }
+
+    /* ── Ocean waves — SVG paths, horizontal drift ── */
+    .mutiny-ocean {
+      position: fixed;
+      bottom: 90px; left: 0; right: 0;
+      height: 90px;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .mutiny-wave {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      background-repeat: repeat-x;
+    }
+
+    /* Each SVG path starts and ends at the same Y — seamless tiling */
+    .mutiny-wave-back {
+      height: 90px;
+      opacity: 0.6;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 90'%3E%3Cpath d='M0,45 C200,18 400,72 600,45 C700,31 762,58 800,45 L800,90 L0,90 Z' fill='%23020a1c'/%3E%3C/svg%3E");
+      background-size: 800px 90px;
+      animation: waveDriftA 20s linear infinite;
+    }
+
+    .mutiny-wave-mid {
+      height: 68px;
+      opacity: 0.75;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 68'%3E%3Cpath d='M0,34 C150,8 300,60 450,34 C540,18 580,48 600,34 L600,68 L0,68 Z' fill='%23010810'/%3E%3C/svg%3E");
+      background-size: 600px 68px;
+      animation: waveDriftB 12s linear infinite reverse;
+    }
+
+    .mutiny-wave-front {
+      height: 48px;
+      opacity: 0.9;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 48'%3E%3Cpath d='M0,24 C125,4 250,44 375,24 C440,10 475,36 500,24 L500,48 L0,48 Z' fill='%2301060e'/%3E%3C/svg%3E");
+      background-size: 500px 48px;
+      animation: waveDriftC 7s linear infinite;
+    }
+
+    @keyframes waveDriftA { from { background-position-x: 0; } to { background-position-x: 800px; } }
+    @keyframes waveDriftB { from { background-position-x: 0; } to { background-position-x: 600px; } }
+    @keyframes waveDriftC { from { background-position-x: 0; } to { background-position-x: 500px; } }
+
+    /* ── Atmospheric overlay ── */
+    .mutiny-vignette {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 45%, transparent 38%, rgba(0,0,0,0.65) 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Stars ── */
+    .mutiny-stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .mutiny-star {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.7);
+      animation: starTwinkle ease-in-out infinite;
+    }
+
+    @keyframes starTwinkle {
+      0%, 100% { opacity: 0.15; transform: scale(1);    }
+      50%       { opacity: 0.85; transform: scale(1.6);  }
+    }
+
+    /* ── Ensure game elements sit above atmosphere ── */
+    .game-nav,
+    .curse-banner,
+    .mutiny-arena,
+    #turn-bar {
+      position: relative;
+    }
+
+    /* ── Prompt text ── */
+    #mutiny-prompt {
+      font-size: 0.85rem !important;
+      letter-spacing: 3.5px !important;
+      text-transform: uppercase !important;
+      color: #1e3a5f !important;
+      font-weight: 900 !important;
+      transition: color 0.4s ease !important;
+    }
+
+    #mutiny-prompt.is-visible {
+      color: #334d6e !important;
+    }
+
+    /* ── Turn bar overhaul ── */
+    #turn-bar {
+      background: linear-gradient(to top, #010810, #06122a) !important;
+      border-top: 1px solid #0f2444 !important;
+      padding: 12px 24px 24px !important;
+      z-index: 10 !important;
+    }
+
+    .mutiny-turn-indicator {
+      gap: 14px !important;
+      align-items: center !important;
+    }
+
+    #turn-emoji {
+      width: 54px !important;
+      height: 54px !important;
+      border-radius: 14px !important;
+      font-size: 2.2rem !important;
+      background: #0a1830 !important;
+      border: 2px solid #1e4070 !important;
+      box-shadow: 0 0 22px rgba(250,204,21,0.1), 0 5px 14px rgba(0,0,0,0.6) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    #turn-name {
+      font-size: 1rem !important;
+      font-weight: 800 !important;
+      color: #64748b !important;
+      letter-spacing: 0.5px !important;
+    }
+
+    /* ── Flash backgrounds — rich gradients ── */
+    .mutiny-container.flash-gold {
+      background: radial-gradient(ellipse at 50% 30%, #92400e 0%, #451a03 100%) !important;
+    }
+    .mutiny-container.flash-red {
+      background: radial-gradient(ellipse at 50% 30%, #7f1d1d 0%, #3b0000 100%) !important;
+    }
+    .mutiny-container.flash-purple {
+      background: radial-gradient(ellipse at 50% 30%, #4c1d95 0%, #1e0040 100%) !important;
+    }
+
+    /* ── Card modal enhanced animation ── */
+    .rule-overlay.is-visible .mutiny-card {
+      animation: cardUnfurl 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+    }
+
+    @keyframes cardUnfurl {
+      0%   { transform: scale(0.65) translateY(50px); opacity: 0; }
+      65%  { transform: scale(1.04) translateY(-5px);  opacity: 1; }
+      100% { transform: scale(1)    translateY(0);     opacity: 1; }
+    }
+
+    /* ── Wax seal on the card modal ── */
+    .mutiny-wax-seal {
+      position: absolute;
+      top: -20px;
+      right: 20px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #ef4444, #7f1d1d);
+      border: 3px solid #450a0a;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,150,150,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    /* ── Cursor prompt glow ring above coin ── */
+    .mutiny-coin-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* ── Curse banner re-style ── */
+    .curse-banner {
+      background: linear-gradient(135deg, #450a0a, #7f1d1d) !important;
+      border: none !important;
+      border-bottom: 1px solid rgba(239,68,68,0.3) !important;
+    }
+  </style>
 </head>
 
-<body style="background-color: #0f172a;"> <!-- Prevent flash of white before rendering -->
+<body>
 
-  <div id="mutiny-container" class="mutiny-container">
+  <!-- ══════════════════════════════════════
+       CREW MANIFEST — Pre-game starting screen
+       ══════════════════════════════════════ -->
+  <div id="crew-manifest" class="crew-manifest">
+    <div class="crew-manifest-header">
+      <span class="crew-manifest-skull">☠️</span>
+      <h1 class="crew-manifest-title">Crew Manifest</h1>
+      <p class="crew-manifest-subtitle">Before you set sail...</p>
+      <p class="crew-manifest-hint">Tap your avatar to add a secret card to the deck</p>
+    </div>
+
+    <div class="crew-wave">〰 〰 〰</div>
+
+    <div id="crew-avatar-grid" class="crew-avatar-grid">
+      <!-- Populated via JS -->
+    </div>
+
+    <div class="crew-wave">〰 〰 〰</div>
+
+    <button id="set-sail-btn" class="btn-3d crew-set-sail-btn">⚓ SET SAIL</button>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       CARD BUILDER MODAL
+       ══════════════════════════════════════ -->
+  <div id="card-builder-overlay" class="rule-overlay">
+    <div class="card-builder-modal">
+
+      <div class="card-builder-player-tag">
+        <div class="card-builder-avatar" id="builder-avatar"></div>
+        <p class="card-builder-player-name" id="builder-player-name">Player</p>
+      </div>
+
+      <h2 class="card-builder-title">Your Secret Order</h2>
+
+      <div class="card-editable-wrapper">
+        <div
+          id="card-editable"
+          class="card-editable"
+          contenteditable="true"
+          data-placeholder="Write your order... tap the tokens below to insert player names"
+        ></div>
+      </div>
+
+      <hr class="card-rope-divider">
+
+      <div class="card-token-section">
+        <div class="card-token-label">⚓ Drag or tap to insert</div>
+        <div class="card-token-row">
+          <button class="card-token-chip" data-token="{player}" draggable="true">🎯 {player}</button>
+          <button class="card-token-chip" data-token="{left}" draggable="true">◀ {left}</button>
+          <button class="card-token-chip" data-token="{random}" draggable="true">🎲 {random}</button>
+        </div>
+      </div>
+
+      <hr class="card-rope-divider">
+
+      <div class="card-tag-section">
+        <div class="card-tag-label">Card Type</div>
+        <div class="card-tag-row" id="builder-tag-row">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+
+      <hr class="card-rope-divider">
+
+      <div class="card-builder-actions">
+        <button id="card-builder-save" class="btn-3d card-builder-save-btn">LOCK IT IN</button>
+        <button id="card-builder-clear" class="btn-3d card-builder-clear-btn">Clear Card</button>
+        <button id="card-builder-close" class="btn-3d secondary" style="font-size:0.95rem; padding:12px;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       GAME UI (hidden until SET SAIL)
+       ══════════════════════════════════════ -->
+  <div id="mutiny-container" class="mutiny-container" style="display:none;">
+
+    <!-- Atmospheric layers (rendered behind everything) -->
+    <div class="mutiny-vignette" aria-hidden="true"></div>
+    <div class="mutiny-stars" id="mutiny-stars" aria-hidden="true">
+      <!-- Stars injected via JS -->
+    </div>
+    <div class="mutiny-ocean" aria-hidden="true">
+      <div class="mutiny-wave mutiny-wave-back"></div>
+      <div class="mutiny-wave mutiny-wave-mid"></div>
+      <div class="mutiny-wave mutiny-wave-front"></div>
+    </div>
+
     <nav class="game-nav">
       <button id="back-btn" class="game-nav-back">✕</button>
       <button id="filter-btn" class="game-nav-filter">⚙</button>
@@ -25,17 +478,30 @@
     </div>
 
     <main class="mutiny-arena">
+      <!-- 3D Coin -->
       <div class="mutiny-coin-wrapper">
-        <div id="mutiny-coin" class="mutiny-coin">☠️</div>
+        <div class="mutiny-coin-scene">
+          <div class="mutiny-coin-glow" aria-hidden="true"></div>
+          <div id="mutiny-coin" class="mutiny-coin">
+            <div class="mutiny-coin-face mutiny-coin-heads">
+              <span class="mutiny-coin-symbol">☠️</span>
+            </div>
+            <div class="mutiny-coin-face mutiny-coin-tails">
+              <span class="mutiny-coin-symbol">⚓</span>
+            </div>
+          </div>
+          <div class="mutiny-coin-shadow-blob"></div>
+        </div>
       </div>
+
       <div id="mutiny-prompt" class="mutiny-prompt is-visible">
-        TAP THE COIN TO ISSUE AN ORDER
+        PRESS YOUR LUCK
       </div>
     </main>
 
     <!-- Bounty Poster Modal -->
     <div id="mutiny-overlay" class="rule-overlay">
-      <div id="mutiny-card" class="mutiny-card">
+      <div id="mutiny-card" class="mutiny-card" style="position:relative;">
         <div class="modal-player-tag">
           <span class="modal-tag-avatar" id="mutiny-modal-avatar"></span>
           <p class="modal-tag-name" id="mutiny-modal-name"></p>
@@ -47,8 +513,7 @@
         <div id="cbtm-explanation" class="cbtm-explanation-text" style="display: inline-block;">
           Pitch your statement to the group. You have 30 seconds to convince everyone it <strong>"could be the
             move."</strong> When the timer ends, the group votes. If they agree — they drink. If they deny it — you
-          finish
-          your drink.
+          finish your drink.
           <br><br>
           Example: "pre-ing at grandpa's with the boys, cheap drinks, great company, and he's in bed by 9pm perfect for
           the boys to then go out"
@@ -63,7 +528,7 @@
           <button id="cbtm-win-btn" class="btn-3d" style="background-color: #22c55e;">IT'S THE MOVE</button>
           <button id="cbtm-lose-btn" class="btn-3d" style="background-color: #ef4444;">NOT THE MOVE</button>
         </div>
-        <button id="mutiny-continue-btn" class="btn-3d mutiny-continue-btn mt-4">AYE AYE</button>
+        <button id="mutiny-continue-btn" class="btn-3d mutiny-continue-btn mt-4">AYE AYE, CAPTAIN</button>
       </div>
     </div>
 
@@ -72,9 +537,9 @@
       <div class="rule-card">
         <h2 class="rule-title">ABANDON SHIP?</h2>
         <p class="rule-text">are you sure you want to end the game?</p>
-        <button id="exit-stay-btn" class="btn-3d mt-4">KEEP PLAYING</button>
+        <button id="exit-stay-btn" class="btn-3d mt-4">KEEP SAILING</button>
         <br>
-        <button id="exit-quit-btn" class="btn-3d mt-2 secondary">YES, QUIT</button>
+        <button id="exit-quit-btn" class="btn-3d mt-2 secondary">YES, ABANDON SHIP</button>
       </div>
     </div>
 
@@ -98,8 +563,8 @@
     </div>
   </div>
 
-  <script src="js/storage.js?v=1.1"></script>
-  <script src="js/mutiny.js?v=1.1"></script>
+  <script src="js/storage.js?v=1.3"></script>
+  <script src="js/mutiny.js?v=1.3"></script>
 </body>
 
 </html>

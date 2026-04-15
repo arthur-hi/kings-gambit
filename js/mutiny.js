@@ -22,7 +22,6 @@ const mutinyCards = [
   { text: "{player}, flex and take a drink.", tags: ['physical'] },
   { text: "just drink: {player}, exactly what it says. drink.", tags: ['physical'] },
   { text: "left choice: {player}, do whatever {left} wants or drink.", tags: ['duel'] },
-  { text: "card of death: {player}, down your drink and take a shot.", tags: ['physical'] },
   { text: "nicest smell: {player}, pick the player who smells nicest; they drink.", tags: ['spicy'] },
   { text: "king: {player}, command everyone to do anything. if they can't, they drink.", tags: ['social'] },
   { text: "lipstick: anyone wearing lipstick drinks and kisses someone on the cheek.", tags: ['spicy'] },
@@ -56,7 +55,7 @@ const mutinyCards = [
   { text: "look left: {left} drinks.", tags: ['duel'] },
   { text: "right hand man: {player}, high five {right}. both drink.", tags: ['duel'] },
   { text: "quick reflexes: everyone stand up. last one standing drinks.", tags: ['social', 'physical'] },
-  { text: "passport check: {player}, drink for every country you’ve visited.", tags: ['physical'] },
+  { text: "passport check: {player}, drink for every country you've visited.", tags: ['physical'] },
   { text: "gender majority: if there are more females, females drink. if more males, males drink.", tags: ['physical'] },
   { text: "social: everyone drinks!", tags: ['social'] },
   { text: "dynamic duo: {player}, if your best friend is playing, you both drink.", tags: ['physical'] },
@@ -107,6 +106,40 @@ const mutinyCards = [
 
 ];
 
+// ══════════════════════════════════════════════
+// CUSTOM CARD STORAGE (session-scoped)
+// ══════════════════════════════════════════════
+
+const CUSTOM_CARDS_KEY = 'mutiny-custom-cards-session';
+
+function getCustomCards() {
+  try {
+    const data = sessionStorage.getItem(CUSTOM_CARDS_KEY);
+    return data ? JSON.parse(data) : {};
+  } catch (e) { return {}; }
+}
+
+function saveCustomCard(playerId, cardData) {
+  const all = getCustomCards();
+  all[playerId] = cardData;
+  sessionStorage.setItem(CUSTOM_CARDS_KEY, JSON.stringify(all));
+}
+
+function clearCustomCard(playerId) {
+  const all = getCustomCards();
+  delete all[playerId];
+  sessionStorage.setItem(CUSTOM_CARDS_KEY, JSON.stringify(all));
+}
+
+function getCustomCardsArray() {
+  const all = getCustomCards();
+  return Object.values(all).filter(c => c && c.text && c.text.trim().length > 0);
+}
+
+// ══════════════════════════════════════════════
+// GAME STATE
+// ══════════════════════════════════════════════
+
 let activePlayers = [];
 let currentPlayerIndex = 0;
 let isSpinning = false;
@@ -138,78 +171,311 @@ function saveSelectedTags(tags) {
 
 let selectedTags = getSelectedTags();
 
-// DOM Elements
-const container = document.getElementById('mutiny-container');
-const coin = document.getElementById('mutiny-coin');
-const promptDisplay = document.getElementById('mutiny-prompt');
-const turnEmoji = document.getElementById('turn-emoji');
-const turnName = document.getElementById('turn-name');
-
-const mutinyOverlay = document.getElementById('mutiny-overlay');
-const mutinyTitle = document.getElementById('mutiny-title');
-const mutinyText = document.getElementById('mutiny-text');
-const mutinyContinueBtn = document.getElementById('mutiny-continue-btn');
-
-// Exit Modal
-const backBtn = document.getElementById('back-btn');
-const exitOverlay = document.getElementById('exit-overlay');
-const exitStayBtn = document.getElementById('exit-stay-btn');
-const exitQuitBtn = document.getElementById('exit-quit-btn');
-
-// Curse Banner
-const curseBanner = document.getElementById('curse-banner');
-const curseText = document.getElementById('curse-text');
-
-// Filter Drawer DOM
-const filterBtn = document.getElementById('filter-btn');
-const filterOverlay = document.getElementById('filter-overlay');
-const filterDrawer = document.getElementById('filter-drawer');
-const filterCloseBtn = document.getElementById('filter-close');
-const filterList = document.getElementById('filter-list');
-
-// CBTM Elements
-const cbtmTimer = document.getElementById('cbtm-timer');
-const cbtmStartBtn = document.getElementById('cbtm-start-btn');
-const cbtmVoteActions = document.getElementById('cbtm-vote-actions');
-const cbtmWinBtn = document.getElementById('cbtm-win-btn');
-const cbtmLoseBtn = document.getElementById('cbtm-lose-btn');
-const cbtmExplainBtn = document.getElementById('cbtm-explain-btn');
-const cbtmExplanation = document.getElementById('cbtm-explanation');
-const cbtmDoneBtn = document.getElementById('cbtm-done-btn');
+// DOM Elements (game UI — not available until game starts)
+let container, coin, promptDisplay, turnEmoji, turnName;
+let mutinyOverlay, mutinyTitle, mutinyText, mutinyContinueBtn;
+let backBtn, exitOverlay, exitStayBtn, exitQuitBtn;
+let curseBanner, curseText;
+let filterBtn, filterOverlay, filterDrawer, filterCloseBtn, filterList;
+let cbtmTimer, cbtmStartBtn, cbtmVoteActions, cbtmWinBtn, cbtmLoseBtn, cbtmExplainBtn, cbtmExplanation, cbtmDoneBtn;
 let cbtmInterval = null;
+
+// ══════════════════════════════════════════════
+// CREW MANIFEST — Pre-game screen
+// ══════════════════════════════════════════════
+
+const crewManifest = document.getElementById('crew-manifest');
+const crewAvatarGrid = document.getElementById('crew-avatar-grid');
+const setSailBtn = document.getElementById('set-sail-btn');
+
+// Card Builder modal elements
+const cardBuilderOverlay = document.getElementById('card-builder-overlay');
+const builderAvatar = document.getElementById('builder-avatar');
+const builderPlayerName = document.getElementById('builder-player-name');
+const cardEditable = document.getElementById('card-editable');
+const builderTagRow = document.getElementById('builder-tag-row');
+const cardBuilderSave = document.getElementById('card-builder-save');
+const cardBuilderClear = document.getElementById('card-builder-clear');
+const cardBuilderClose = document.getElementById('card-builder-close');
+
+let activeBuilderPlayerId = null; // which player's card is being edited
+let builderActiveTags = [];       // currently selected tags in the builder
+
+function renderCrewManifest() {
+  crewAvatarGrid.innerHTML = '';
+  const customCards = getCustomCards();
+
+  activePlayers.forEach(p => {
+    const hasCard = !!(customCards[p.id] && customCards[p.id].text && customCards[p.id].text.trim());
+
+    const item = document.createElement('div');
+    item.className = `crew-avatar-item${hasCard ? ' has-card' : ''}`;
+    item.dataset.id = p.id;
+
+    // Avatar frame
+    const frame = document.createElement('div');
+    frame.className = 'crew-avatar-frame';
+    if (p.emoji.endsWith('.png') || p.emoji.endsWith('.gif')) {
+      const img = document.createElement('img');
+      img.src = p.emoji;
+      img.draggable = false;
+      frame.appendChild(img);
+    } else {
+      frame.textContent = p.emoji;
+    }
+
+    // Name label
+    const name = document.createElement('div');
+    name.className = 'crew-avatar-name';
+    name.textContent = p.name;
+
+    item.appendChild(frame);
+    item.appendChild(name);
+
+    item.addEventListener('click', () => openCardBuilder(p));
+    crewAvatarGrid.appendChild(item);
+  });
+}
+
+function openCardBuilder(player) {
+  activeBuilderPlayerId = player.id;
+
+  // Set player identity in builder header
+  builderAvatar.innerHTML = '';
+  if (player.emoji.endsWith('.png') || player.emoji.endsWith('.gif')) {
+    const img = document.createElement('img');
+    img.src = player.emoji;
+    builderAvatar.appendChild(img);
+  } else {
+    builderAvatar.textContent = player.emoji;
+  }
+  builderPlayerName.textContent = player.name;
+
+  // Load existing card data (if any)
+  const existing = getCustomCards()[player.id];
+  cardEditable.textContent = existing ? existing.text : '';
+  builderActiveTags = existing ? [...existing.tags.filter(t => t !== 'custom')] : [];
+
+  // Render tags
+  renderBuilderTags();
+
+  // Show overlay
+  cardBuilderOverlay.classList.add('is-visible');
+
+  // Focus the text area after short delay (avoids keyboard issues on mobile)
+  setTimeout(() => {
+    cardEditable.focus();
+    // Place cursor at end
+    const range = document.createRange();
+    const sel = window.getSelection();
+    range.selectNodeContents(cardEditable);
+    range.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }, 300);
+}
+
+function renderBuilderTags() {
+  builderTagRow.innerHTML = '';
+  ALL_TAGS.forEach(tag => {
+    const pill = document.createElement('button');
+    pill.className = `card-tag-pill${builderActiveTags.includes(tag.key) ? ' is-active' : ''}`;
+    pill.textContent = `${tag.icon} ${tag.label}`;
+    pill.addEventListener('click', () => {
+      if (builderActiveTags.includes(tag.key)) {
+        builderActiveTags = builderActiveTags.filter(t => t !== tag.key);
+        pill.classList.remove('is-active');
+      } else {
+        builderActiveTags.push(tag.key);
+        pill.classList.add('is-active');
+      }
+      if (navigator.vibrate) navigator.vibrate(20);
+    });
+    builderTagRow.appendChild(pill);
+  });
+}
+
+function closeCardBuilder() {
+  cardBuilderOverlay.classList.remove('is-visible');
+  activeBuilderPlayerId = null;
+  // Blur to dismiss keyboard on mobile
+  cardEditable.blur();
+}
+
+// Token chip logic — tap to insert at cursor
+function setupTokenChips() {
+  document.querySelectorAll('.card-token-chip').forEach(chip => {
+    const token = chip.dataset.token;
+
+    // Tap/click to insert
+    chip.addEventListener('click', (e) => {
+      e.preventDefault();
+      insertTokenAtCursor(token, chip);
+    });
+
+    // Drag start
+    chip.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', token);
+      e.dataTransfer.effectAllowed = 'copy';
+    });
+  });
+
+  // Drop target on the editable area
+  cardEditable.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  });
+
+  cardEditable.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const token = e.dataTransfer.getData('text/plain');
+    if (token) {
+      // Position caret at drop point
+      let range;
+      if (document.caretRangeFromPoint) {
+        range = document.caretRangeFromPoint(e.clientX, e.clientY);
+      } else if (document.caretPositionFromPoint) {
+        const pos = document.caretPositionFromPoint(e.clientX, e.clientY);
+        if (pos) {
+          range = document.createRange();
+          range.setStart(pos.offsetNode, pos.offset);
+          range.collapse(true);
+        }
+      }
+      if (range) {
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+      insertToken(token);
+    }
+  });
+}
+
+function insertTokenAtCursor(token, chipEl) {
+  // Visual feedback on chip
+  chipEl.classList.add('inserting');
+  setTimeout(() => chipEl.classList.remove('inserting'), 300);
+
+  cardEditable.focus();
+  insertToken(token);
+  if (navigator.vibrate) navigator.vibrate(30);
+}
+
+function insertToken(token) {
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) {
+    // If no selection, just append
+    cardEditable.textContent += token;
+    return;
+  }
+
+  let range = sel.getRangeAt(0);
+
+  // Ensure the selection is inside cardEditable
+  if (!cardEditable.contains(range.commonAncestorContainer)) {
+    // Place at end
+    range = document.createRange();
+    range.selectNodeContents(cardEditable);
+    range.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  range.deleteContents();
+  const textNode = document.createTextNode(token);
+  range.insertNode(textNode);
+
+  // Move cursor after the inserted token
+  range.setStartAfter(textNode);
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+// Card Builder event listeners
+cardBuilderSave.addEventListener('click', () => {
+  if (!activeBuilderPlayerId) return;
+
+  const rawText = cardEditable.textContent.trim();
+  if (!rawText) {
+    // Nothing written — just close
+    closeCardBuilder();
+    return;
+  }
+
+  const tags = ['custom', ...builderActiveTags];
+  saveCustomCard(activeBuilderPlayerId, { text: rawText, tags });
+
+  // Haptic + close
+  if (navigator.vibrate) navigator.vibrate([30, 20, 60]);
+  closeCardBuilder();
+
+  // Refresh the avatar grid to show badge
+  renderCrewManifest();
+
+  // Show toast
+  if (window.UI && window.UI.showToast) {
+    const player = activePlayers.find(p => p.id === activeBuilderPlayerId);
+    const name = player ? player.name : 'Player';
+    window.UI.showToast(`${name}'s card is locked in! ⚓`);
+  }
+});
+
+cardBuilderClear.addEventListener('click', () => {
+  cardEditable.textContent = '';
+  builderActiveTags = [];
+  renderBuilderTags();
+  if (activeBuilderPlayerId) {
+    clearCustomCard(activeBuilderPlayerId);
+    renderCrewManifest();
+  }
+  if (navigator.vibrate) navigator.vibrate(20);
+});
+
+cardBuilderClose.addEventListener('click', closeCardBuilder);
+
+// Close on overlay backdrop tap (but not when scrolling modal)
+cardBuilderOverlay.addEventListener('click', (e) => {
+  if (e.target === cardBuilderOverlay) closeCardBuilder();
+});
+
+// SET SAIL button
+setSailBtn.addEventListener('click', () => {
+  crewManifest.classList.add('is-leaving');
+  setTimeout(() => {
+    crewManifest.style.display = 'none';
+    startGame();
+  }, 400);
+});
+
+// ══════════════════════════════════════════════
+// GAME INIT
+// ══════════════════════════════════════════════
 
 function initTagsForPlayerCount() {
   const currentCount = activePlayers.length;
   const lastCount = parseInt(localStorage.getItem('mutiny-last-player-count') || '0', 10);
 
   if (currentCount === 2 && lastCount !== 2) {
-    // Just transitioned to 2-player mode. Disable group tags.
     const tagsToDisable = ['social', 'spicy', 'physical'];
     let changed = false;
     selectedTags = selectedTags.filter(t => {
-      if (tagsToDisable.includes(t)) {
-        changed = true;
-        return false;
-      }
+      if (tagsToDisable.includes(t)) { changed = true; return false; }
       return true;
     });
     if (changed) saveSelectedTags(selectedTags);
   } else if (currentCount > 2 && lastCount > 0 && lastCount <= 2) {
-    // Just transitioned to 3+ players. Enable group tags if they were removed.
     const tagsToEnable = ['social', 'spicy', 'physical'];
     let changed = false;
     tagsToEnable.forEach(tag => {
-      if (!selectedTags.includes(tag)) {
-        selectedTags.push(tag);
-        changed = true;
-      }
+      if (!selectedTags.includes(tag)) { selectedTags.push(tag); changed = true; }
     });
     if (changed) saveSelectedTags(selectedTags);
   }
 
   localStorage.setItem('mutiny-last-player-count', currentCount.toString());
 
-  // Show Toast
   if (currentCount === 2) {
     const toastShown = sessionStorage.getItem('mutiny-2p-toast-shown');
     if (!toastShown) {
@@ -233,8 +499,73 @@ function init() {
 
   initTagsForPlayerCount();
 
-  // Create an initial shuffled deck stack so it doesn't repeat too fast
+  // Show the crew manifest, set up token chips
+  setupTokenChips();
+  renderCrewManifest();
+}
+
+function startGame() {
+  // Reveal game UI
+  const gameContainer = document.getElementById('mutiny-container');
+  gameContainer.style.display = 'flex';
+
+  // Cache DOM elements now that the game UI is visible
+  container = document.getElementById('mutiny-container');
+  coin = document.getElementById('mutiny-coin');
+  promptDisplay = document.getElementById('mutiny-prompt');
+  turnEmoji = document.getElementById('turn-emoji');
+  turnName = document.getElementById('turn-name');
+
+  mutinyOverlay = document.getElementById('mutiny-overlay');
+  mutinyTitle = document.getElementById('mutiny-title');
+  mutinyText = document.getElementById('mutiny-text');
+  mutinyContinueBtn = document.getElementById('mutiny-continue-btn');
+
+  backBtn = document.getElementById('back-btn');
+  exitOverlay = document.getElementById('exit-overlay');
+  exitStayBtn = document.getElementById('exit-stay-btn');
+  exitQuitBtn = document.getElementById('exit-quit-btn');
+
+  curseBanner = document.getElementById('curse-banner');
+  curseText = document.getElementById('curse-text');
+
+  filterBtn = document.getElementById('filter-btn');
+  filterOverlay = document.getElementById('filter-overlay');
+  filterDrawer = document.getElementById('filter-drawer');
+  filterCloseBtn = document.getElementById('filter-close');
+  filterList = document.getElementById('filter-list');
+
+  cbtmTimer = document.getElementById('cbtm-timer');
+  cbtmStartBtn = document.getElementById('cbtm-start-btn');
+  cbtmVoteActions = document.getElementById('cbtm-vote-actions');
+  cbtmWinBtn = document.getElementById('cbtm-win-btn');
+  cbtmLoseBtn = document.getElementById('cbtm-lose-btn');
+  cbtmExplainBtn = document.getElementById('cbtm-explain-btn');
+  cbtmExplanation = document.getElementById('cbtm-explanation');
+  cbtmDoneBtn = document.getElementById('cbtm-done-btn');
+
+  // Build deck including custom cards
   fillDeck();
+
+  // Generate atmospheric stars
+  const starsEl = document.getElementById('mutiny-stars');
+  if (starsEl) {
+    starsEl.innerHTML = '';
+    for (let i = 0; i < 35; i++) {
+      const star = document.createElement('div');
+      star.className = 'mutiny-star';
+      const size = 1 + Math.random() * 2.5;
+      star.style.cssText = [
+        `width:${size}px`,
+        `height:${size}px`,
+        `top:${Math.random() * 65}%`,
+        `left:${Math.random() * 100}%`,
+        `animation-duration:${1.8 + Math.random() * 4}s`,
+        `animation-delay:${Math.random() * 4}s`
+      ].join(';');
+      starsEl.appendChild(star);
+    }
+  }
 
   currentPlayerIndex = 0;
   updateTurnUI();
@@ -246,7 +577,6 @@ function init() {
   exitStayBtn.addEventListener('click', () => exitOverlay.classList.remove('is-visible'));
   exitQuitBtn.addEventListener('click', () => window.location.href = 'index.html');
 
-  // Filter drawer events
   filterBtn.addEventListener('click', openFilterDrawer);
   filterCloseBtn.addEventListener('click', closeFilterDrawer);
   filterOverlay.addEventListener('click', closeFilterDrawer);
@@ -259,7 +589,6 @@ function init() {
     const isShown = cbtmExplanation.style.display === 'block';
     cbtmExplanation.style.display = isShown ? 'inline-block' : 'block';
     cbtmExplainBtn.textContent = isShown ? 'Explain' : 'Hide';
-    // Shrink avatar when explanation is expanded
     if (playerTag) {
       playerTag.classList.toggle('is-shrunk', !isShown);
       cbtmExplanation.classList.toggle('is-open', !isShown);
@@ -294,32 +623,36 @@ function init() {
 
   // CBTM: Done early
   cbtmDoneBtn.addEventListener('click', () => {
-    if (cbtmInterval) {
-      clearInterval(cbtmInterval);
-      cbtmInterval = null;
-    }
+    if (cbtmInterval) { clearInterval(cbtmInterval); cbtmInterval = null; }
     cbtmTimer.style.display = 'none';
     cbtmDoneBtn.style.display = 'none';
     cbtmVoteActions.style.display = 'flex';
   });
 
-  // CBTM: Vote resolution
   cbtmWinBtn.addEventListener('click', handleContinue);
   cbtmLoseBtn.addEventListener('click', handleContinue);
 }
 
+// ══════════════════════════════════════════════
+// DECK + GAME LOGIC
+// ══════════════════════════════════════════════
+
 function fillDeck() {
-  // Tags disabled by the user
   const disabledTags = ALL_TAGS
     .map(t => t.key)
     .filter(tag => !selectedTags.includes(tag));
 
-  deck = mutinyCards.filter(card => {
-    // Never filter out persistent or cbtm cards unless their other tags are all excluded
+  // Standard cards filtered by tag preferences
+  const standardCards = mutinyCards.filter(card => {
     const filterableTags = card.tags.filter(t => t !== 'persistent' && t !== 'cbtm');
     if (filterableTags.length === 0) return true;
     return !filterableTags.every(tag => disabledTags.includes(tag));
   });
+
+  // Custom cards always included (bypass filter, like persistent cards)
+  const customCards = getCustomCardsArray();
+
+  deck = [...standardCards, ...customCards];
 
   // Shuffle
   for (let i = deck.length - 1; i > 0; i--) {
@@ -344,56 +677,55 @@ function getReplacedPrompt(rawString) {
   const cIndex = currentPlayerIndex;
   const pCount = activePlayers.length;
 
-  // Determine targets
   const pPlayer = activePlayers[cIndex].name;
-
-  // Left is logically index-1 (who played before), Right is index+1 (who plays next)
   const pLeft = activePlayers[(cIndex - 1 + pCount) % pCount].name;
   const pRight = activePlayers[(cIndex + 1) % pCount].name;
 
-  // Random other
   let randIdx = Math.floor(Math.random() * pCount);
   while (randIdx === cIndex && pCount > 1) {
     randIdx = Math.floor(Math.random() * pCount);
   }
   const pRandom = activePlayers[randIdx].name;
 
-  // Across (furthest away)
   const acrossIdx = (cIndex + Math.floor(pCount / 2)) % pCount;
   const pAcross = activePlayers[acrossIdx].name;
 
-  let outMatch = rawString
+  return rawString
     .replace(/{player}/g, pPlayer)
     .replace(/{left}/g, pLeft)
     .replace(/{right}/g, pRight)
     .replace(/{random}/g, pRandom)
     .replace(/{across}/g, pAcross);
-
-  return outMatch;
 }
 
 function handleSpin() {
   if (isSpinning) return;
   isSpinning = true;
 
-  // Trigger animation
   coin.classList.remove('spin-fast');
-  void coin.offsetWidth; // force reflow
+  void coin.offsetWidth;
   coin.classList.add('spin-fast');
 
-  // Resolve after animation
   setTimeout(() => {
     coin.classList.remove('spin-fast');
 
-    // Draw card
+    // Shockwave ring
+    const scene = coin.closest('.mutiny-coin-scene');
+    if (scene) {
+      const sw = document.createElement('div');
+      sw.className = 'mutiny-shockwave';
+      scene.appendChild(sw);
+      setTimeout(() => sw.remove(), 900);
+    }
+
+    if (navigator.vibrate) navigator.vibrate([40, 30, 80]);
+
     if (deck.length === 0) fillDeck();
     const cardObj = deck.pop();
     const rawStr = cardObj.text;
 
-    // Evaluate logic
     const finalPromt = getReplacedPrompt(rawStr);
 
-    // Determine title
     let title = "THE CAPTAIN'S ORDER";
     const lower = finalPromt.toLowerCase();
     if (lower.includes('everyone') || lower.includes('minority')) {
@@ -402,7 +734,6 @@ function handleSpin() {
       title = "A FOUL CURSE";
     }
 
-    // Modal Player Tag
     const p = activePlayers[currentPlayerIndex];
     const mutinyModalAvatar = document.getElementById('mutiny-modal-avatar');
     const mutinyModalName = document.getElementById('mutiny-modal-name');
@@ -413,12 +744,10 @@ function handleSpin() {
     }
     mutinyModalName.textContent = p.name;
 
-    // Render Modal
     mutinyTitle.textContent = title;
     mutinyText.textContent = finalPromt;
     mutinyOverlay.classList.add('is-visible');
 
-    // CBTM card interception
     if (cardObj.tags.includes('cbtm')) {
       mutinyTitle.textContent = "COULD BE THE MOVE?";
       mutinyText.style.display = 'none';
@@ -442,33 +771,22 @@ function handleSpin() {
       cbtmVoteActions.style.display = 'none';
     }
 
-    // Haptics if available
-    if (navigator.vibrate) {
-      navigator.vibrate(50);
-    }
-
+    if (navigator.vibrate) navigator.vibrate(50);
     triggerFlashIfGroup(finalPromt);
 
-    // Check for persistent curse
     if (cardObj.tags.includes('persistent')) {
       activeCurse = finalPromt;
       curseText.textContent = finalPromt;
       curseBanner.style.display = 'block';
     }
-  }, 800); // Wait for the 0.8s CSS animation
+  }, 1400);
 }
 
 function handleContinue() {
   mutinyOverlay.classList.remove('is-visible');
-
-  // Remove flash backgrounds
   container.classList.remove('flash-gold', 'flash-red', 'flash-purple');
 
-  // Reset CBTM state
-  if (cbtmInterval) {
-    clearInterval(cbtmInterval);
-    cbtmInterval = null;
-  }
+  if (cbtmInterval) { clearInterval(cbtmInterval); cbtmInterval = null; }
   cbtmStartBtn.style.display = 'none';
   cbtmTimer.style.display = 'none';
   cbtmDoneBtn.style.display = 'none';
@@ -478,11 +796,9 @@ function handleContinue() {
   mutinyText.style.display = 'block';
   mutinyContinueBtn.style.display = 'block';
 
-  // Reset avatar shrink
   const playerTag = document.querySelector('#mutiny-card .modal-player-tag');
   if (playerTag) playerTag.classList.remove('is-shrunk');
 
-  // Advance turn
   currentPlayerIndex = (currentPlayerIndex + 1) % activePlayers.length;
   updateTurnUI();
 
@@ -500,7 +816,10 @@ function triggerFlashIfGroup(text) {
   }
 }
 
-// --- Filter Drawer ---
+// ══════════════════════════════════════════════
+// FILTER DRAWER
+// ══════════════════════════════════════════════
+
 function openFilterDrawer() {
   filterOverlay.classList.add('is-visible');
   filterDrawer.classList.add('is-open');
@@ -534,9 +853,7 @@ function renderFilterDrawer() {
 
     input.addEventListener('change', () => {
       if (input.checked) {
-        if (!selectedTags.includes(tag.key)) {
-          selectedTags.push(tag.key);
-        }
+        if (!selectedTags.includes(tag.key)) selectedTags.push(tag.key);
       } else {
         selectedTags = selectedTags.filter(t => t !== tag.key);
       }
@@ -554,5 +871,7 @@ function renderFilterDrawer() {
   });
 }
 
-// Start
+// ══════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════
 init();
