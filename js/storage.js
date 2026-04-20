@@ -120,6 +120,59 @@ window.Storage = {
   clearGPStats
 };
 
+// ─────────────────────────────────────────────
+// SETTINGS — Avatar Mode
+// ─────────────────────────────────────────────
+const SETTINGS_KEY = 'kings-gambit-settings';
+
+function _getSettings() {
+  try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; } catch(e) { return {}; }
+}
+
+function getAvatarMode() {
+  return _getSettings().avatarMode || 'animated';
+}
+
+/**
+ * Returns an HTML string (<img> or <canvas>) for a player avatar,
+ * respecting the current avatar display mode.
+ * @param {string} src  Path to the avatar image.
+ * @returns {string} HTML string.
+ */
+function renderAvatarImg(src) {
+  const mode = getAvatarMode();
+  if (mode === 'static' && src.endsWith('.gif')) {
+    return `<canvas class="avatar-image avatar-static-canvas" data-gif-src="${src}" width="80" height="80"></canvas>`;
+  }
+  if (mode === 'once' && src.endsWith('.gif')) {
+    // Append timestamp to force the GIF to restart from frame 1 each render
+    const freshSrc = `${src}?t=${Date.now()}`;
+    return `<img src="${freshSrc}" class="avatar-image" draggable="false" style="pointer-events:none;">`;
+  }
+  return `<img src="${src}" class="avatar-image" draggable="false">`;
+}
+
+/**
+ * Snapshots the first frame of any .avatar-static-canvas elements into
+ * their canvas, for users using "Static" avatar mode.
+ */
+function snapshotStaticCanvases() {
+  document.querySelectorAll('.avatar-static-canvas').forEach(canvas => {
+    if (canvas.dataset.snapped) return;
+    const src = canvas.dataset.gifSrc;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const ctx = canvas.getContext('2d');
+      canvas.width = img.naturalWidth || 80;
+      canvas.height = img.naturalHeight || 80;
+      ctx.drawImage(img, 0, 0);
+      canvas.dataset.snapped = '1';
+    };
+    img.src = src;
+  });
+}
+
 // --- Toast UI ---
 function showToast(message, duration = 3000) {
   let container = document.getElementById('toast-container');
@@ -147,5 +200,5 @@ function showToast(message, duration = 3000) {
   }, duration);
 }
 
-window.UI = { showToast };
+window.UI = { showToast, getAvatarMode, renderAvatarImg, snapshotStaticCanvases };
 

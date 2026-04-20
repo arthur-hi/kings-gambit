@@ -2031,3 +2031,228 @@ body[data-avatar-mode="once"] .avatar-image {
   border-top: 2px dashed rgba(146,64,14,0.3);
   margin: 12px 0;
 }
+
+/* ============================================
+   CREW COMPASS — Phase 2 Visualiser
+   ============================================ */
+
+.group-visualizer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Enough room for the ring + active glow */
+  width: 220px;
+  height: 220px;
+  margin: 0 auto 12px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.crew-ring {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  /* animation-name driven by .rotateCW / .rotateCCW classes set by JS */
+}
+
+.crew-ring.rotateCW  { animation: rotateCW  12s linear infinite; }
+.crew-ring.rotateCCW { animation: rotateCCW 12s linear infinite; }
+
+@keyframes rotateCW  { from { transform: rotate(0deg);   } to { transform: rotate(360deg);  } }
+@keyframes rotateCCW { from { transform: rotate(0deg);   } to { transform: rotate(-360deg); } }
+
+.crew-ring-avatar {
+  position: absolute;
+  /* Centred on the ring's midpoint */
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  margin-top: -22px;
+  margin-left: -22px;
+  border-radius: var(--radius-md);
+  background-color: #1e293b;
+  border: 2px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+/* Counter-rotate avatars so they always face up while the ring spins */
+.crew-ring.rotateCW  .crew-ring-avatar { animation: counterRotateCW  12s linear infinite; }
+.crew-ring.rotateCCW .crew-ring-avatar { animation: counterRotateCCW 12s linear infinite; }
+
+/* Counter-rotation is the opposite direction to keep avatars upright */
+@keyframes counterRotateCW  { from { transform: rotate(0deg);   } to { transform: rotate(-360deg); } }
+@keyframes counterRotateCCW { from { transform: rotate(0deg);   } to { transform: rotate(360deg);  } }
+
+.crew-ring-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Active / starting player glows gold */
+.crew-ring-avatar.is-active {
+  border-color: #facc15;
+  box-shadow:
+    0 0 0 3px rgba(250,204,21,0.8),
+    0 0 18px rgba(250,204,21,0.55),
+    0 0 32px rgba(250,204,21,0.25);
+  z-index: 5;
+}
+
+/* ============================================
+   TRANSITION SYSTEM — Phase 3
+   ============================================ */
+
+/* Shared card shell */
+.transition-card {
+  background: linear-gradient(160deg, #0c1f3f 0%, #020a18 100%);
+  border-radius: var(--radius-lg);
+  padding: 40px 28px 36px;
+  text-align: center;
+  width: 100%;
+  max-width: 360px;
+  border: 2px solid #1e3a5f;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.8);
+  position: relative;
+  overflow: hidden;
+  transform: scale(0.9);
+  transition: transform var(--transition-bounce);
+}
+
+.rule-overlay.is-visible .transition-card {
+  transform: scale(1);
+}
+
+/* ── Reverse Panel ── */
+.reverse-panel {
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* The SVG sits full-width behind the text */
+.wind-lines {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* Animated dash-offset for each wind line path */
+.wind-line {
+  stroke-dasharray: 320;
+  stroke-dashoffset: 320;
+  animation: windLineDraw 0.9s ease-out forwards;
+}
+.wl-1 { animation-delay: 0s;    }
+.wl-2 { animation-delay: 0.15s; }
+.wl-3 { animation-delay: 0.3s;  }
+
+@keyframes windLineDraw {
+  from { stroke-dashoffset: 320; opacity: 0.2; }
+  60%  { stroke-dashoffset: 0;   opacity: 1;   }
+  to   { stroke-dashoffset: -40; opacity: 0;   }
+}
+
+.reverse-icon {
+  font-size: 3.5rem;
+  position: relative;
+  z-index: 2;
+  animation: reverseIconSpin 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+@keyframes reverseIconSpin {
+  from { transform: rotate(-180deg) scale(0.4); opacity: 0; }
+  to   { transform: rotate(0deg)    scale(1);   opacity: 1; }
+}
+
+.reverse-title {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #facc15;
+  text-transform: uppercase;
+  letter-spacing: -0.5px;
+  text-shadow: 0 0 20px rgba(250,204,21,0.5);
+  position: relative;
+  z-index: 2;
+  margin: 0;
+}
+
+.reverse-direction {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+  position: relative;
+  z-index: 2;
+  margin: 0;
+}
+
+/* ── Pass the Phone Panel ── */
+.pass-panel {
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.pass-label {
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #64748b;
+  margin: 0;
+}
+
+.pass-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius-md);
+  background-color: #1e293b;
+  border: 3px solid #facc15;
+  box-shadow: 0 0 24px rgba(250,204,21,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  overflow: hidden;
+  animation: passAvatarPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+@keyframes passAvatarPop {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.pass-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.pass-name {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #f8fafc;
+  margin: 0;
+}
+
+.pass-hint {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #475569;
+  margin: 0;
+  letter-spacing: 0.5px;
+}

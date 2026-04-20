@@ -506,6 +506,12 @@
           <span class="modal-tag-avatar" id="mutiny-modal-avatar"></span>
           <p class="modal-tag-name" id="mutiny-modal-name"></p>
         </div>
+
+        <!-- Crew Compass Visualiser (shown for group/social cards) -->
+        <div id="group-visualizer" class="group-visualizer" style="display:none;">
+          <div id="crew-ring" class="crew-ring"></div>
+        </div>
+
         <h2 id="mutiny-title" class="mutiny-card-title">THE CAPTAIN'S ORDER</h2>
         <p id="mutiny-text" class="mutiny-card-text">Placeholder text</p>
         <button id="cbtm-explain-btn" class="btn-3d secondary"
@@ -540,6 +546,36 @@
         <button id="exit-stay-btn" class="btn-3d mt-4">KEEP SAILING</button>
         <br>
         <button id="exit-quit-btn" class="btn-3d mt-2 secondary">YES, ABANDON SHIP</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         TRANSITION MODAL (Reverse + Pass the Phone)
+         ══════════════════════════════════════ -->
+    <div id="transition-overlay" class="rule-overlay">
+      <div class="transition-card">
+
+        <!-- REVERSE PANEL -->
+        <div id="reverse-panel" class="reverse-panel" style="display:none;">
+          <!-- Animated wind lines SVG -->
+          <svg class="wind-lines" viewBox="0 0 300 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path class="wind-line wl-1" d="M-20,40 Q60,15 140,40 Q220,65 300,40" fill="none" stroke="rgba(250,204,21,0.55)" stroke-width="3" stroke-linecap="round"/>
+            <path class="wind-line wl-2" d="M-20,80 Q80,55 160,80 Q240,105 320,80" fill="none" stroke="rgba(250,204,21,0.35)" stroke-width="2" stroke-linecap="round"/>
+            <path class="wind-line wl-3" d="M-20,120 Q70,95 150,120 Q230,145 310,120" fill="none" stroke="rgba(250,204,21,0.2)" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <div class="reverse-icon">🌊</div>
+          <h2 class="reverse-title">THE TIDES HAVE TURNED!</h2>
+          <p id="reverse-direction-text" class="reverse-direction">Direction is now CLOCKWISE ↻</p>
+        </div>
+
+        <!-- PASS PANEL (auto-dismiss) -->
+        <div id="pass-panel" class="pass-panel" style="display:none;">
+          <p class="pass-label">PASS THE PHONE TO</p>
+          <div id="pass-avatar" class="pass-avatar"></div>
+          <p id="pass-name" class="pass-name">Player</p>
+          <p class="pass-hint">⚓ Their turn next!</p>
+        </div>
+
       </div>
     </div>
 

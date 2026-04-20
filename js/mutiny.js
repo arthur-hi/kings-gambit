@@ -133,7 +133,18 @@ function clearCustomCard(playerId) {
 
 function getCustomCardsArray() {
   const all = getCustomCards();
-  return Object.values(all).filter(c => c && c.text && c.text.trim().length > 0);
+  return Object.values(all)
+    .filter(c => c && (typeof c === 'string' ? c.trim().length > 0 : c.text && c.text.trim().length > 0))
+    .map(c => {
+      // Legacy migration: wrap pre-v2 cards into the structured format
+      if (typeof c === 'string') {
+        return { v: 2, text: c, tags: ['custom'] };
+      }
+      if (!c.v || c.v < 2) {
+        return { v: 2, text: c.text, tags: c.tags || ['custom'] };
+      }
+      return c;
+    });
 }
 
 // ══════════════════════════════════════════════
@@ -145,6 +156,10 @@ let currentPlayerIndex = 0;
 let isSpinning = false;
 let deck = [];
 let activeCurse = null;
+
+// ── Directional state ──────────────────────────
+// 1 = clockwise (default), -1 = counter-clockwise
+let gameDirection = 1;
 
 // Filter state
 const ALL_TAGS = [
@@ -663,14 +678,18 @@ function fillDeck() {
 
 function updateTurnUI() {
   const p = activePlayers[currentPlayerIndex];
+  const dirLabel = gameDirection === 1 ? '↻' : '↺';
 
   if (p.emoji.endsWith('.png') || p.emoji.endsWith('.gif')) {
-    turnEmoji.innerHTML = `<img src="${p.emoji}" class="avatar-image" draggable="false">`;
+    // Use shared renderAvatarImg so avatar mode is respected
+    turnEmoji.innerHTML = (window.UI && window.UI.renderAvatarImg)
+      ? window.UI.renderAvatarImg(p.emoji)
+      : `<img src="${p.emoji}" class="avatar-image" draggable="false">`;
   } else {
     turnEmoji.textContent = p.emoji;
   }
 
-  turnName.textContent = `Capt. ${p.name}'s turn`;
+  turnName.textContent = `${dirLabel} Capt. ${p.name}'s turn`;
 }
 
 function getReplacedPrompt(rawString) {
@@ -678,8 +697,11 @@ function getReplacedPrompt(rawString) {
   const pCount = activePlayers.length;
 
   const pPlayer = activePlayers[cIndex].name;
-  const pLeft = activePlayers[(cIndex - 1 + pCount) % pCount].name;
+  const pLeft  = activePlayers[(cIndex - 1 + pCount) % pCount].name;
   const pRight = activePlayers[(cIndex + 1) % pCount].name;
+  // Direction-aware next player
+  const nextIdx = (cIndex + gameDirection + pCount) % pCount;
+  const pNext  = activePlayers[nextIdx].name;
 
   let randIdx = Math.floor(Math.random() * pCount);
   while (randIdx === cIndex && pCount > 1) {
@@ -692,10 +714,50 @@ function getReplacedPrompt(rawString) {
 
   return rawString
     .replace(/{player}/g, pPlayer)
-    .replace(/{left}/g, pLeft)
-    .replace(/{right}/g, pRight)
+    .replace(/{left}/g,   pLeft)
+    .replace(/{right}/g,  pRight)
+    .replace(/{next}/g,   pNext)
     .replace(/{random}/g, pRandom)
     .replace(/{across}/g, pAcross);
+}
+
+// ──────────────────────────────────────────────
+// CREW COMPASS — Visualiser for group cards
+// ──────────────────────────────────────────────
+
+function buildCrewRing(highlightIndex) {
+  const ring = document.getElementById('crew-ring');
+  if (!ring) return;
+  ring.innerHTML = '';
+
+  const count = activePlayers.length;
+  const radius = 72; // px from centre to avatar centre
+
+  activePlayers.forEach((p, i) => {
+    const angleDeg = (360 / count) * i - 90; // start at top
+    const angleRad = (angleDeg * Math.PI) / 180;
+    const x = radius * Math.cos(angleRad);
+    const y = radius * Math.sin(angleRad);
+
+    const item = document.createElement('div');
+    item.className = `crew-ring-avatar${i === highlightIndex ? ' is-active' : ''}`;
+    item.style.transform = `translate(${x}px, ${y}px)`;
+
+    if (p.emoji.endsWith('.png') || p.emoji.endsWith('.gif')) {
+      const imgHtml = (window.UI && window.UI.renderAvatarImg)
+        ? window.UI.renderAvatarImg(p.emoji)
+        : `<img src="${p.emoji}" class="avatar-image" draggable="false">`;
+      item.innerHTML = imgHtml;
+    } else {
+      item.textContent = p.emoji;
+    }
+
+    ring.appendChild(item);
+  });
+
+  // Drive spin animation via CSS class (also enables the sibling counter-rotation selector)
+  ring.classList.toggle('rotateCW',  gameDirection === 1);
+  ring.classList.toggle('rotateCCW', gameDirection === -1);
 }
 
 function handleSpin() {
@@ -724,10 +786,10 @@ function handleSpin() {
     const cardObj = deck.pop();
     const rawStr = cardObj.text;
 
-    const finalPromt = getReplacedPrompt(rawStr);
+    const finalPrompt = getReplacedPrompt(rawStr);
 
     let title = "THE CAPTAIN'S ORDER";
-    const lower = finalPromt.toLowerCase();
+    const lower = finalPrompt.toLowerCase();
     if (lower.includes('everyone') || lower.includes('minority')) {
       title = "GROUP ORDER";
     } else if (lower.includes('round') || lower.includes('until') || lower.includes('curse')) {
@@ -736,17 +798,45 @@ function handleSpin() {
 
     const p = activePlayers[currentPlayerIndex];
     const mutinyModalAvatar = document.getElementById('mutiny-modal-avatar');
-    const mutinyModalName = document.getElementById('mutiny-modal-name');
-    if (p.emoji.endsWith('.png') || p.emoji.endsWith('.gif')) {
-      mutinyModalAvatar.innerHTML = `<img src="${p.emoji}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md);" draggable="false">`;
+    const mutinyModalName   = document.getElementById('mutiny-modal-name');
+    const groupVisualizer   = document.getElementById('group-visualizer');
+
+    // Determine if this is a group/social card
+    const isGroupCard = cardObj.tags.some(t => ['social', 'callout'].includes(t));
+
+    if (isGroupCard) {
+      // Show Crew Compass, hide single-player avatar
+      if (mutinyModalAvatar) mutinyModalAvatar.style.display = 'none';
+      if (mutinyModalName)   mutinyModalName.style.display   = 'none';
+      if (groupVisualizer) {
+        groupVisualizer.style.display = 'flex';
+        buildCrewRing(currentPlayerIndex);
+      }
     } else {
-      mutinyModalAvatar.textContent = p.emoji;
+      // Show single-player avatar, hide Crew Compass
+      if (mutinyModalAvatar) mutinyModalAvatar.style.display = '';
+      if (mutinyModalName)   mutinyModalName.style.display   = '';
+      if (groupVisualizer)   groupVisualizer.style.display   = 'none';
+
+      if (p.emoji.endsWith('.png') || p.emoji.endsWith('.gif')) {
+        const avatarHtml = (window.UI && window.UI.renderAvatarImg)
+          ? window.UI.renderAvatarImg(p.emoji)
+          : `<img src="${p.emoji}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md);" draggable="false">`;
+        mutinyModalAvatar.innerHTML = avatarHtml;
+      } else {
+        mutinyModalAvatar.textContent = p.emoji;
+      }
+      mutinyModalName.textContent = p.name;
     }
-    mutinyModalName.textContent = p.name;
 
     mutinyTitle.textContent = title;
-    mutinyText.textContent = finalPromt;
+    mutinyText.textContent  = finalPrompt;
     mutinyOverlay.classList.add('is-visible');
+
+    // Snapshot static canvases after the modal renders
+    if (window.UI && window.UI.snapshotStaticCanvases) {
+      requestAnimationFrame(() => window.UI.snapshotStaticCanvases());
+    }
 
     if (cardObj.tags.includes('cbtm')) {
       mutinyTitle.textContent = "COULD BE THE MOVE?";
@@ -772,17 +862,17 @@ function handleSpin() {
     }
 
     if (navigator.vibrate) navigator.vibrate(50);
-    triggerFlashIfGroup(finalPromt);
+    triggerFlashIfGroup(finalPrompt);
 
     if (cardObj.tags.includes('persistent')) {
-      activeCurse = finalPromt;
-      curseText.textContent = finalPromt;
+      activeCurse = finalPrompt;
+      curseText.textContent = finalPrompt;
       curseBanner.style.display = 'block';
     }
   }, 1400);
 }
 
-function handleContinue() {
+function _closeMutinyCard() {
   mutinyOverlay.classList.remove('is-visible');
   container.classList.remove('flash-gold', 'flash-red', 'flash-purple');
 
@@ -798,11 +888,109 @@ function handleContinue() {
 
   const playerTag = document.querySelector('#mutiny-card .modal-player-tag');
   if (playerTag) playerTag.classList.remove('is-shrunk');
+}
 
-  currentPlayerIndex = (currentPlayerIndex + 1) % activePlayers.length;
-  updateTurnUI();
+function handleContinue() {
+  _closeMutinyCard();
+  _runTransition();
+}
 
-  isSpinning = false;
+// ──────────────────────────────────────────────
+// TRANSITION SYSTEM — Reverse & Pass the Phone
+// ──────────────────────────────────────────────
+
+const REVERSE_CHANCE = 0.15; // 15% probability
+
+function _runTransition() {
+  const transOverlay  = document.getElementById('transition-overlay');
+  const reversePanel  = document.getElementById('reverse-panel');
+  const passPanel     = document.getElementById('pass-panel');
+  const reverseDirEl  = document.getElementById('reverse-direction-text');
+  const passAvatarEl  = document.getElementById('pass-avatar');
+  const passNameEl    = document.getElementById('pass-name');
+
+  if (!transOverlay) {
+    // Fallback if HTML not yet updated
+    currentPlayerIndex = (currentPlayerIndex + 1) % activePlayers.length;
+    updateTurnUI();
+    isSpinning = false;
+    return;
+  }
+
+  const didReverse = Math.random() < REVERSE_CHANCE;
+
+  if (didReverse) {
+    gameDirection *= -1;
+    if (navigator.vibrate) navigator.vibrate([100, 80, 100]); // two long pulses
+
+    const dirWord = gameDirection === 1 ? 'CLOCKWISE ↻' : 'COUNTER-CLOCKWISE ↺';
+    if (reverseDirEl) reverseDirEl.textContent = `Direction is now ${dirWord}`;
+
+    if (reversePanel) {
+      reversePanel.style.display = 'flex';
+      // Restart wind-line animation by cloning & replacing the SVG
+      const svg = reversePanel.querySelector('.wind-lines');
+      if (svg) {
+        const clone = svg.cloneNode(true);
+        svg.replaceWith(clone);
+      }
+    }
+    if (passPanel)    passPanel.style.display    = 'none';
+    transOverlay.classList.add('is-visible');
+
+    // After 2s switch to Pass panel
+    setTimeout(() => {
+      if (reversePanel) reversePanel.style.display = 'none';
+      _showPassPanel(passPanel, passAvatarEl, passNameEl, transOverlay);
+    }, 2000);
+  } else {
+    if (reversePanel) reversePanel.style.display = 'none';
+    transOverlay.classList.add('is-visible');
+    _showPassPanel(passPanel, passAvatarEl, passNameEl, transOverlay);
+  }
+}
+
+function _showPassPanel(passPanel, passAvatarEl, passNameEl, transOverlay) {
+  // Calculate next player AFTER potential direction flip
+  const pCount  = activePlayers.length;
+  const nextIdx = (currentPlayerIndex + gameDirection + pCount) % pCount;
+  const next    = activePlayers[nextIdx];
+
+  if (passNameEl) passNameEl.textContent = next.name;
+  if (passAvatarEl) {
+    if (next.emoji.endsWith('.png') || next.emoji.endsWith('.gif')) {
+      const avatarHtml = (window.UI && window.UI.renderAvatarImg)
+        ? window.UI.renderAvatarImg(next.emoji)
+        : `<img src="${next.emoji}" class="avatar-image" draggable="false">`;
+      passAvatarEl.innerHTML = avatarHtml;
+    } else {
+      passAvatarEl.textContent = next.emoji;
+    }
+  }
+
+  if (passPanel) passPanel.style.display = 'flex';
+
+  // Force the pop animation to restart each time
+  if (passAvatarEl) {
+    passAvatarEl.style.animation = 'none';
+    void passAvatarEl.offsetWidth; // reflow
+    passAvatarEl.style.animation = '';
+  }
+
+  if (navigator.vibrate) navigator.vibrate(60); // one short pulse
+
+  // Snapshot static canvases for the pass avatar
+  if (window.UI && window.UI.snapshotStaticCanvases) {
+    requestAnimationFrame(() => window.UI.snapshotStaticCanvases());
+  }
+
+  // Auto-dismiss after 2.5 s, then advance turn
+  setTimeout(() => {
+    if (transOverlay) transOverlay.classList.remove('is-visible');
+    currentPlayerIndex = nextIdx;
+    updateTurnUI();
+    isSpinning = false;
+  }, 2500);
 }
 
 function triggerFlashIfGroup(text) {

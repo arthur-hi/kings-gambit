@@ -7,7 +7,7 @@ const editBtn = document.getElementById('edit-btn');
 const settingsBtn = document.getElementById('settings-btn');
 const gamesList = document.querySelectorAll('.game-card');
 
-// Settings
+// Settings (save logic stays here; read helpers are now shared via window.UI)
 const SETTINGS_KEY = 'kings-gambit-settings';
 function getSettings() {
   try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; } catch(e) { return {}; }
@@ -15,8 +15,9 @@ function getSettings() {
 function saveSettings(obj) {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...getSettings(), ...obj }));
 }
+// Delegate to shared version in storage.js / window.UI
 function getAvatarMode() {
-  return getSettings().avatarMode || 'animated';
+  return window.UI ? window.UI.getAvatarMode() : (getSettings().avatarMode || 'animated');
 }
 function applyAvatarMode() {
   document.body.dataset.avatarMode = getAvatarMode();
@@ -84,35 +85,14 @@ window.addEventListener('DOMContentLoaded', () => {
   init();
 });
 
-// --- Avatar Mode Rendering ---
+// --- Avatar Mode Rendering (delegates to shared window.UI helpers) ---
 function renderAvatarImg(src) {
-  const mode = getAvatarMode();
-  if (mode === 'static' && src.endsWith('.gif')) {
-    return `<canvas class="avatar-image avatar-static-canvas" data-gif-src="${src}" width="80" height="80"></canvas>`;
-  }
-  if (mode === 'once' && src.endsWith('.gif')) {
-    // Append timestamp to force the GIF to restart from frame 1 each render
-    const freshSrc = `${src}?t=${Date.now()}`;
-    return `<img src="${freshSrc}" class="avatar-image" draggable="false" style="pointer-events:none;">`;
-  }
-  return `<img src="${src}" class="avatar-image" draggable="false">`;
+  return window.UI ? window.UI.renderAvatarImg(src)
+    : `<img src="${src}" class="avatar-image" draggable="false">`;
 }
 
 function snapshotStaticCanvases() {
-  document.querySelectorAll('.avatar-static-canvas').forEach(canvas => {
-    if (canvas.dataset.snapped) return;
-    const src = canvas.dataset.gifSrc;
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const ctx = canvas.getContext('2d');
-      canvas.width = img.naturalWidth || 80;
-      canvas.height = img.naturalHeight || 80;
-      ctx.drawImage(img, 0, 0);
-      canvas.dataset.snapped = '1';
-    };
-    img.src = src;
-  });
+  if (window.UI && window.UI.snapshotStaticCanvases) window.UI.snapshotStaticCanvases();
 }
 
 // Global Drag Listeners
