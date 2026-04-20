@@ -8,7 +8,7 @@ const settingsBtn = document.getElementById('settings-btn');
 const gamesList = document.querySelectorAll('.game-card');
 
 // Settings (save logic stays here; read helpers are now shared via window.UI)
-const SETTINGS_KEY = 'kings-gambit-settings';
+//const SETTINGS_KEY = 'kings-gambit-settings';
 function getSettings() {
   try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; } catch(e) { return {}; }
 }
