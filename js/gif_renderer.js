@@ -3,6 +3,20 @@ class GifRendererEngine {
     this.decoders = new Map();
     this.animationFrames = new Map();
     this.fallbackCache = new Map();
+    this.pending = new Map();
+    this.decodeQueue = [];
+    this.isDecoding = false;
+  }
+
+  async processQueue() {
+    if (this.isDecoding || this.decodeQueue.length === 0) return;
+    this.isDecoding = true;
+
+    const task = this.decodeQueue.shift();
+    await task();
+
+    this.isDecoding = false;
+    this.processQueue();
   }
 
   async render(canvas, src, mode) {
@@ -12,7 +26,6 @@ class GifRendererEngine {
     if (!('ImageDecoder' in window)) {
       return this.renderFallback(canvas, src, mode);
     }
-    return this.renderFallback(canvas, src, mode);
     const ctx = canvas.getContext('2d');
     
     try {
@@ -95,25 +108,30 @@ class GifRendererEngine {
       return false;
     }
 
+    this.drawFallback(canvas, src);
+
     let frames = this.fallbackCache.get(src);
 
     if (!frames) {
-      try {
-        const response = await fetch(src);
-        const buffer = await response.arrayBuffer();
-        
-        // Instantiate the GIF object (this parses the buffer under the hood)
-        const gif = new window.GIF(buffer);
-        
-        // Decompress the frames, passing true to build the usable patch data
-        frames = gif.decompressFrames(true);
-        
-        this.fallbackCache.set(src, frames);
-      } catch (e) {
-        console.error('fallback gif decode error:', e);
-        this.drawFallback(canvas, src);
-        return false;
-      }
+      // push the heavy lifting into the queue
+      await new Promise(resolve => {
+        this.decodeQueue.push(async () => {
+          // check if it got cached by another canvas while waiting
+          if (!this.fallbackCache.has(src)) {
+            try {
+              const response = await fetch(src);
+              const buffer = await response.arrayBuffer();
+              const gif = new window.GIF(buffer);
+              this.fallbackCache.set(src, gif.decompressFrames(true));
+            } catch (e) {
+              console.error('fallback decode error:', e);
+            }
+          }
+          frames = this.fallbackCache.get(src);
+          resolve();
+        });
+        this.processQueue();
+      });
     }
 
     if (!frames || !frames.length) return false;
