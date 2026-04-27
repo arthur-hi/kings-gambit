@@ -2,6 +2,7 @@ class GifRendererEngine {
   constructor() {
     this.decoders = new Map();
     this.animationFrames = new Map();
+    this.fallbackCache = new Map();
   }
 
   async render(canvas, src, mode) {
@@ -9,11 +10,9 @@ class GifRendererEngine {
     this.stop(canvas);
 
     if (!('ImageDecoder' in window)) {
-      console.warn('ImageDecoder API not supported in this browser. Falling back to static image.');
-      this.drawFallback(canvas, src);
-      return false;
+      return this.renderFallback(canvas, src, mode);
     }
-
+    return this.renderFallback(canvas, src, mode);
     const ctx = canvas.getContext('2d');
     
     try {
@@ -86,6 +85,118 @@ class GifRendererEngine {
       this.drawFallback(canvas, src);
       return false;
     }
+  }
+
+  async renderFallback(canvas, src, mode) {
+    // Look for the global GIF constructor exposed by the library
+    if (!window.GIF) {
+      console.warn('gifuct-js (window.GIF) missing, falling back to static.');
+      this.drawFallback(canvas, src);
+      return false;
+    }
+
+    let frames = this.fallbackCache.get(src);
+
+    if (!frames) {
+      try {
+        const response = await fetch(src);
+        const buffer = await response.arrayBuffer();
+        
+        // Instantiate the GIF object (this parses the buffer under the hood)
+        const gif = new window.GIF(buffer);
+        
+        // Decompress the frames, passing true to build the usable patch data
+        frames = gif.decompressFrames(true);
+        
+        this.fallbackCache.set(src, frames);
+      } catch (e) {
+        console.error('fallback gif decode error:', e);
+        this.drawFallback(canvas, src);
+        return false;
+      }
+    }
+
+    if (!frames || !frames.length) return false;
+
+    const ctx = canvas.getContext('2d');
+    
+    // Set dimensions based on the first frame
+    const dims = frames[0].dims;
+    if (canvas.width !== dims.width || canvas.height !== dims.height) {
+      canvas.width = dims.width || 80;
+      canvas.height = dims.height || 80;
+    }
+
+    // setup a backing canvas to accumulate the frames properly
+    const backingCanvas = document.createElement('canvas');
+    backingCanvas.width = canvas.width;
+    backingCanvas.height = canvas.height;
+    const backingCtx = backingCanvas.getContext('2d');
+
+    // setup a reusable patch canvas for individual frame data
+    const patchCanvas = document.createElement('canvas');
+    const patchCtx = patchCanvas.getContext('2d');
+
+    let frameIndex = 0;
+    let lastFrameTime = performance.now();
+
+    const animate = (time) => {
+      if (!this.animationFrames.has(canvas)) return;
+
+      const currentFrame = frames[frameIndex];
+      const currentFrameDuration = currentFrame.delay || 100;
+
+      if (time - lastFrameTime >= currentFrameDuration) {
+        const dims = currentFrame.dims;
+
+        // resize patch canvas to match the specific frame's patch
+        if (patchCanvas.width !== dims.width || patchCanvas.height !== dims.height) {
+          patchCanvas.width = dims.width;
+          patchCanvas.height = dims.height;
+        }
+
+        // write the raw pixel data into the patch canvas
+        const patchImageData = patchCtx.createImageData(dims.width, dims.height);
+        patchImageData.data.set(currentFrame.patch);
+        patchCtx.putImageData(patchImageData, 0, 0);
+
+        // handle frame disposal (clearing the previous patch if the gif requires it)
+        if (frameIndex > 0) {
+          const prevFrame = frames[frameIndex - 1];
+          if (prevFrame.disposalType === 2) { 
+            backingCtx.clearRect(prevFrame.dims.left, prevFrame.dims.top, prevFrame.dims.width, prevFrame.dims.height);
+          }
+        } else {
+          backingCtx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // draw the patch onto the backing canvas at the correct offset
+        backingCtx.drawImage(patchCanvas, 0, 0, dims.width, dims.height, dims.left, dims.top, dims.width, dims.height);
+
+        // draw the fully composited frame to the visible canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(backingCanvas, 0, 0);
+
+        lastFrameTime = time;
+        frameIndex++;
+
+        if (frameIndex >= frames.length) {
+          if (mode === 'once') {
+            this.animationFrames.delete(canvas);
+            return;
+          }
+          frameIndex = 0;
+          backingCtx.clearRect(0, 0, canvas.width, canvas.height); // clear on loop
+        }
+      }
+      
+      const id = requestAnimationFrame(animate);
+      this.animationFrames.set(canvas, id);
+    };
+
+    const id = requestAnimationFrame(animate);
+    this.animationFrames.set(canvas, id);
+    return true;
   }
 
   stop(canvas) {
