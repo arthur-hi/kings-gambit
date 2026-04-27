@@ -86,8 +86,8 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // --- Avatar Mode Rendering (delegates to shared window.UI helpers) ---
-function renderAvatarImg(src) {
-  return window.UI ? window.UI.renderAvatarImg(src)
+function renderAvatarImg(src, forceAnimate = false) {
+  return window.UI ? window.UI.renderAvatarImg(src, forceAnimate)
     : `<img src="${src}" class="avatar-image" draggable="false">`;
 }
 
@@ -253,6 +253,8 @@ function renderRoster() {
   // Snapshot first frame for static mode
   if (getAvatarMode() === 'static') {
     requestAnimationFrame(snapshotStaticCanvases);
+  } else if (window.UI && window.UI.startAnimatedCanvases) {
+    window.UI.startAnimatedCanvases();
   }
 }
 
@@ -444,7 +446,7 @@ function initEmojiGrid() {
     btn.className = `emoji-btn ${emoji === selectedEmoji ? 'is-selected' : ''}`;
 
     if (emoji.endsWith('.png') || emoji.endsWith('.gif')) {
-      btn.innerHTML = `<img src="${emoji}" class="avatar-image" draggable="false">`;
+      btn.innerHTML = renderAvatarImg(emoji, true);
     } else {
       btn.textContent = emoji;
     }
@@ -457,6 +459,10 @@ function initEmojiGrid() {
     });
     emojiGrid.appendChild(btn);
   });
+
+  if (window.UI && window.UI.startAnimatedCanvases) {
+    window.UI.startAnimatedCanvases();
+  }
 }
 
 function openDrawer() {

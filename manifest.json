@@ -2,7 +2,7 @@
   "name": "Kings Gambit",
   "short_name": "Kings Gambit",
   "description": "A bold, playful drinking game companion.",
-  "start_url": "/index.html",
+  "start_url": "/kings-gambit/index.html",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#ca8a04",

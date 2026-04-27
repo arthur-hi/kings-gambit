@@ -466,9 +466,6 @@ h3 {
   color: var(--color-bg);
 }
 
-.mutiny-card .modal-tag-name {
-  color: #000000;
-}
 
 .emoji-grid {
   display: grid;
@@ -670,11 +667,13 @@ h3 {
   color: #92400e;
 }
 
-.modal-player-tag>span>img {
+.modal-player-tag>span>img,
+.modal-player-tag>span>canvas {
   transition: width 0.3s ease;
 }
 
-.modal-player-tag.is-shrunk>span>img {
+.modal-player-tag.is-shrunk>span>img,
+.modal-player-tag.is-shrunk>span>canvas {
   width: 0% !important;
 }
 
@@ -1022,7 +1021,11 @@ h3 {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: var(--radius-md);
+  border-radius: inherit;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  display: block;
 }
 
 .avatar img,
@@ -2089,12 +2092,14 @@ body[data-avatar-mode="once"] .avatar-image {
 @keyframes counterRotateCW  { from { transform: rotate(0deg);   } to { transform: rotate(-360deg); } }
 @keyframes counterRotateCCW { from { transform: rotate(0deg);   } to { transform: rotate(360deg);  } }
 
-.crew-ring-avatar img {
+.crew-ring-avatar img,
+.crew-ring-avatar canvas {
   width: 100%;
   height: 100%;
   object-fit: cover;
   border-radius: inherit;
   pointer-events: none;
+  display: block;
 }
 
 /* Active / starting player glows gold */
@@ -2234,12 +2239,14 @@ body[data-avatar-mode="once"] .avatar-image {
   to   { transform: scale(1);   opacity: 1; }
 }
 
-.pass-avatar img {
+.pass-avatar img,
+.pass-avatar canvas {
   width: 100%;
   height: 100%;
   object-fit: cover;
   border-radius: inherit;
   pointer-events: none;
+  display: block;
 }
 
 .pass-name {

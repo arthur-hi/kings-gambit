@@ -1,111 +1,4 @@
-const mutinyCards = [
-  { text: "{player}, do an action to {left}. they repeat it and add one. continue until someone fails. loser drinks.", tags: ['duel', 'physical', 'memory'] },
-  { text: "{player}, race {across} to finish your drink. loser takes another drink.", tags: ['physical'] },
-  { text: "travel: whoever has travelled to the most countries drinks.", tags: ['physical'] },
-  { text: "tea or coffee: everyone picks a side. the minority group drinks.", tags: ['social'] },
-  { text: "{player}, tell 2 truths and 1 lie. everyone who guesses wrong drinks.", tags: ['social', 'memory'] },
-  { text: "{player}, touch your toes without bending your legs or drink.", tags: ['physical'] },
-  { text: "beards: all bearded players drink.", tags: ['callout'] },
-  { text: "longest hair: the player with the longest hair drinks.", tags: ['callout'] },
-  { text: "currencies: {player}, start naming currencies. first to repeat or fail drinks.", tags: ['memory'] },
-
-  { text: "{player}, give any player a hug.", tags: ['spicy'] },
-  { text: "european countries: {player}, start naming countries in europe. first to repeat or fail drinks.", tags: ['memory'] },
-  { text: "sample: everyone offers {player} their drink. you pick one and take a sip.", tags: ['social'] },
-  { text: "{player}, take a selfie with {right}. both drink.", tags: ['duel'] },
-  { text: "biggest hands: the person with the biggest hands drinks.", tags: ['callout'] },
-  { text: "banned word: {player}, pick a word that is banned for two rounds. anyone who says it drinks.", tags: ['physical'] },
-  { text: "no english: {player}, don't speak english for one round.", tags: ['physical'] },
-  { text: "pizza or burgers: everyone picks a side. the minority group drinks.", tags: ['social'] },
-  { text: "trivia: {player}, ask {right} a question. correct = you drink, wrong = they drink.", tags: ['duel'] },
-  { text: "{player}, try to walk in a straight line or drink.", tags: ['physical'] },
-  { text: "{player}, flex and take a drink.", tags: ['physical'] },
-  { text: "just drink: {player}, exactly what it says. drink.", tags: ['physical'] },
-  { text: "left choice: {player}, do whatever {left} wants or drink.", tags: ['duel'] },
-  { text: "nicest smell: {player}, pick the player who smells nicest; they drink.", tags: ['spicy'] },
-  { text: "king: {player}, command everyone to do anything. if they can't, they drink.", tags: ['social'] },
-  { text: "lipstick: anyone wearing lipstick drinks and kisses someone on the cheek.", tags: ['spicy'] },
-  { text: "the invisible man: everyone ignores {player} for one round.", tags: ['social'] },
-  { text: "us presidents: {player}, start naming presidents. first to repeat or fail drinks.", tags: ['memory'] },
-  { text: "shortest player: the shortest player sits on the floor for one round.", tags: ['callout'] },
-  { text: "the mixologist: {player}, take some drink from {right} and add it to yours.", tags: ['duel'] },
-  { text: "double trouble: {player}, you have to drink double for one round.", tags: ['physical'] },
-  { text: "straightest teeth: the player with the straightest teeth drinks.", tags: ['callout'] },
-  { text: "mexican wave: {player} drinks, then {left}, then the next, until it comes back.", tags: ['duel'] },
-  { text: "animal farm: everyone makes an animal noise and drinks.", tags: ['social'] },
-  { text: "{player}, play rock paper scissors against {left}. loser drinks.", tags: ['duel'] },
-  { text: "seeing double: everyone drinks double for one round.", tags: ['social'] },
-  { text: "seven: {player}, count up from 1. say 'drink' on multiples of 7 or numbers with a 7 to reverse. first to mess up drinks.", tags: ['physical'] },
-  { text: "round robin: {player}, take a sip of every player's drink.", tags: ['physical'] },
-  { text: "pass the glass: everyone passes their drink to the left. drink your new glass.", tags: ['social'] },
-  { text: "even age: if your age is an even number, drink.", tags: ['callout'] },
-  { text: "waterfall lite: {player} take a big drink.", tags: ['physical'] },
-  { text: "hands up: everyone puts hands in the air. last one drinks.", tags: ['social', 'callout'] },
-  { text: "{player}, drink for every letter in your name.", tags: ['physical'] },
-  { text: "the finger: everyone points at someone. most points drinks.", tags: ['social'] },
-  { text: "{player}, tilt your head all the way back and drink.", tags: ['physical'] },
-  { text: "coin flip: {player}, call heads or tails and flip. correct = everyone else drinks, wrong = you drink.", tags: ['social'] },
-  { text: "the floor is lava: anyone who touches the floor for one round drinks.", tags: ['physical'] },
-  { text: "double down: the last person who drank must drink again.", tags: ['physical'] },
-  { text: "movie genres: {player}, name genres clockwise. first to repeat or fail drinks.", tags: ['social', 'memory'] },
-  { text: "triple threat: {player}, pick three players to drink.", tags: ['physical'] },
-  { text: "capital cities: {player}, name capitals clockwise. first to repeat or fail drinks.", tags: ['social', 'memory'] },
-  { text: "gift giver: {right} must find something and bring it to {player} as a gift.", tags: ['duel'] },
-  { text: "elder statesman: the oldest player drinks.", tags: ['callout'] },
-  { text: "look left: {left} drinks.", tags: ['duel'] },
-  { text: "right hand man: {player}, high five {right}. both drink.", tags: ['duel'] },
-  { text: "quick reflexes: everyone stand up. last one standing drinks.", tags: ['social', 'physical'] },
-  { text: "passport check: {player}, drink for every country you've visited.", tags: ['physical'] },
-  { text: "gender majority: if there are more females, females drink. if more males, males drink.", tags: ['physical'] },
-  { text: "social: everyone drinks!", tags: ['social'] },
-  { text: "dynamic duo: {player}, if your best friend is playing, you both drink.", tags: ['physical'] },
-  { text: "blind taste test: {player}, guess a secret drink from {left}. wrong = you drink, right = they drink.", tags: ['duel'] },
-  { text: "boulder: {player} drinks 1x, {left} drinks 2x, next drinks 3x, etc., until it returns.", tags: ['duel'] },
-  { text: "cheers: everyone raise their drinks and say cheers.", tags: ['social'] },
-  { text: "asian countries: {player}, name countries in asia. first to repeat or fail drinks.", tags: ['memory'] },
-  { text: "glasses: everyone wearing glasses drinks.", tags: ['social', 'callout'] },
-  { text: "buddy: {player}, pick a player to drink with you.", tags: ['physical'] },
-  { text: "spin the bottle: {player}, spin a bottle. whoever it lands on drinks.", tags: ['physical'] },
-
-  { text: "{player}, you must shake hands with every player.", tags: ['callout'] },
-  { text: "raise your drinks! the last person to do it drinks.", tags: ['social'] },
-  { text: "favourite colour: everyone say their favourite colour. if anyone picks the same one, they drink.", tags: ['social'] },
-  { text: "compliments: {player}, start going around clockwise giving each other compliments.", tags: ['spicy', 'social'] },
-  { text: "one leg: everyone stand on one leg. the first one to fall drinks.", tags: ['social', 'physical'] },
-  { text: "touch the floor: everyone touch the floor. the last person to do it drinks.", tags: ['social', 'physical'] },
-  { text: "gestures: {player}, make a gesture. {left} repeats it and adds one. keep going until someone forgets. loser drinks.", tags: ['duel', 'memory'] },
-  { text: "beatles songs: {player}, start naming beatles songs. first to repeat or fail drinks.", tags: ['memory'] },
-  { text: "dog breeds: {player}, start naming dog breeds. first to repeat or fail drinks.", tags: ['memory'] },
-  { text: "eye contact roulette: everyone look at the ground. on the count of three, look up at another player's eyes. any players making eye contact must drink.", tags: ['spicy', 'social'] },
-  { text: "most likely: {player}, state a 'who is most likely to...' situation. on the count of three, everyone points. that player drinks.", tags: ['social'] },
-  { text: "best dressed: {player}, choose which player is best dressed; they must drink.", tags: ['callout'] },
-  { text: "{player}, do 10 push ups or take a drink.", tags: ['physical'] },
-  { text: "shoulder tap: {player}, turn away. {random} taps your shoulder. if you guess correctly, everyone else drinks. if wrong, you drink.", tags: ['social'] },
-  { text: "{player}, pick three adjectives to describe {left} and then both drink.", tags: ['duel'] },
-  { text: "going to the bar: memory game. {player}, name a drink. each person adds to the list. first to forget or repeat drinks.", tags: ['memory'] },
-  { text: "fists of five: everyone show a number from 1 to 5 on their hand. any players with the same number must drink.", tags: ['social'] },
-  { text: "natural disasters: {player}, name natural disasters clockwise. first to repeat or fail drinks.", tags: ['social', 'memory'] },
-  { text: "rule maker: {player}, create a rule that players must follow or drink (e.g., 'no one say the word what').", tags: ['physical'] },
-  { text: "phone ban: for one round, if anyone checks their phone, they must drink.", tags: ['physical'] },
-  { text: "{player}, exactly what it says—take two drinks.", tags: ['physical'] },
-  { text: "drink twins: all players with the same drink as {player} must drink.", tags: ['social'] },
-  { text: "{player}, arm wrestle {right}. the loser must down their drink.", tags: ['duel'] },
-  { text: "old friends: {player}, the player you have known the longest must drink.", tags: ['physical'] },
-  { text: "thumb war: {player}, have a thumb war with {random}. the loser must finish their drink.", tags: ['duel'] },
-
-  { text: "red or blue: everyone picks a side. the minority group drinks.", tags: ['social'] },
-  { text: "{player}, stand on one leg and take a drink.", tags: ['physical'] },
-
-  { text: "Left Hand Only. If the group catches you using your right hand, you drink. If you use it and get away with it, call them out—everyone else drinks. Lasts until a new curse overwrites it.", tags: ['persistent', 'physical'] },
-  { text: "No Swearing. If the group catches you swearing, you drink. If you swear and get away with it, call them out—everyone else drinks. Lasts until a new curse overwrites it.", tags: ['persistent', 'callout'] },
-  { text: "Little Green Man. You must remove an imaginary green man from your cup before sipping, and put him back after. Catch {player} forgetting = they drink. {player} gets away with it = group drinks. Lasts until a new curse overwrites it.", tags: ['persistent', 'memory'] },
-  { text: "Eye Contact. {player} is now Medusa. Anyone who makes eye contact with {player} drinks. But if {player} makes eye contact and someone calls them out first, {player} drinks. Lasts until a new curse overwrites it.", tags: ['persistent', 'spicy'] },
-
-  { text: "", tags: ['cbtm', 'social'] },
-  { text: "", tags: ['cbtm', 'social'] },
-
-];
-
+// Cards are now loaded from mutiny/cards/*.js into window.MutinyPacks
 // ══════════════════════════════════════════════
 // CUSTOM CARD STORAGE (session-scoped)
 // ══════════════════════════════════════════════
@@ -210,11 +103,10 @@ const builderPlayerName = document.getElementById('builder-player-name');
 const cardEditable = document.getElementById('card-editable');
 const builderTagRow = document.getElementById('builder-tag-row');
 const cardBuilderSave = document.getElementById('card-builder-save');
-const cardBuilderClear = document.getElementById('card-builder-clear');
 const cardBuilderClose = document.getElementById('card-builder-close');
+const cardPreviewEl    = document.getElementById('card-preview');
 
 let activeBuilderPlayerId = null; // which player's card is being edited
-let builderActiveTags = [];       // currently selected tags in the builder
 
 function renderCrewManifest() {
   crewAvatarGrid.innerHTML = '';
@@ -231,10 +123,7 @@ function renderCrewManifest() {
     const frame = document.createElement('div');
     frame.className = 'crew-avatar-frame';
     if (p.emoji.endsWith('.png') || p.emoji.endsWith('.gif')) {
-      const img = document.createElement('img');
-      img.src = p.emoji;
-      img.draggable = false;
-      frame.appendChild(img);
+      frame.innerHTML = (window.UI && window.UI.renderAvatarImg) ? window.UI.renderAvatarImg(p.emoji) : `<img src="${p.emoji}" class="avatar-image" draggable="false">`;
     } else {
       frame.textContent = p.emoji;
     }
@@ -250,6 +139,10 @@ function renderCrewManifest() {
     item.addEventListener('click', () => openCardBuilder(p));
     crewAvatarGrid.appendChild(item);
   });
+  
+  if (window.UI && window.UI.startAnimatedCanvases) {
+    window.UI.startAnimatedCanvases();
+  }
 }
 
 function openCardBuilder(player) {
@@ -258,9 +151,7 @@ function openCardBuilder(player) {
   // Set player identity in builder header
   builderAvatar.innerHTML = '';
   if (player.emoji.endsWith('.png') || player.emoji.endsWith('.gif')) {
-    const img = document.createElement('img');
-    img.src = player.emoji;
-    builderAvatar.appendChild(img);
+    builderAvatar.innerHTML = (window.UI && window.UI.renderAvatarImg) ? window.UI.renderAvatarImg(player.emoji) : `<img src="${player.emoji}" class="avatar-image" draggable="false">`;
   } else {
     builderAvatar.textContent = player.emoji;
   }
@@ -268,14 +159,15 @@ function openCardBuilder(player) {
 
   // Load existing card data (if any)
   const existing = getCustomCards()[player.id];
-  cardEditable.textContent = existing ? existing.text : '';
-  builderActiveTags = existing ? [...existing.tags.filter(t => t !== 'custom')] : [];
-
-  // Render tags
-  renderBuilderTags();
+  cardEditable.innerHTML = existing ? parsePillsToHtml(existing.text) : '';
+  updateCardPreview();
 
   // Show overlay
   cardBuilderOverlay.classList.add('is-visible');
+
+  if (window.UI && window.UI.startAnimatedCanvases) {
+    window.UI.startAnimatedCanvases();
+  }
 
   // Focus the text area after short delay (avoids keyboard issues on mobile)
   setTimeout(() => {
@@ -290,31 +182,93 @@ function openCardBuilder(player) {
   }, 300);
 }
 
-function renderBuilderTags() {
-  builderTagRow.innerHTML = '';
-  ALL_TAGS.forEach(tag => {
-    const pill = document.createElement('button');
-    pill.className = `card-tag-pill${builderActiveTags.includes(tag.key) ? ' is-active' : ''}`;
-    pill.textContent = `${tag.icon} ${tag.label}`;
-    pill.addEventListener('click', () => {
-      if (builderActiveTags.includes(tag.key)) {
-        builderActiveTags = builderActiveTags.filter(t => t !== tag.key);
-        pill.classList.remove('is-active');
-      } else {
-        builderActiveTags.push(tag.key);
-        pill.classList.add('is-active');
-      }
-      if (navigator.vibrate) navigator.vibrate(20);
-    });
-    builderTagRow.appendChild(pill);
+function parsePillsToHtml(text) {
+  if (!text) return '';
+  return text
+    .replace(/{player}/g, '<span class="mutiny-pill" data-type="{player}" contenteditable="false">🎯 @player</span>')
+    .replace(/{left}/g, '<span class="mutiny-pill" data-type="{left}" contenteditable="false">◀ @left</span>')
+    .replace(/{random}/g, '<span class="mutiny-pill" data-type="{random}" contenteditable="false">🎲 @random</span>')
+    .replace(/{across}/g, '<span class="mutiny-pill" data-type="{across}" contenteditable="false">↔ @across</span>')
+    .replace(/{next}/g, '<span class="mutiny-pill" data-type="{next}" contenteditable="false">⏭ @next</span>')
+    .replace(/{right}/g, '<span class="mutiny-pill" data-type="{right}" contenteditable="false">▶ @right</span>')
+    .replace(/{direction}/g, '<span class="mutiny-pill" data-type="{direction}" contenteditable="false">🧭 @direction</span>');
+}
+
+
+// ──────────────────────────────────────────────
+// CARD BUILDER PREVIEW
+// ──────────────────────────────────────────────
+
+/**
+ * Resolves all pill tokens using the builder's player as current player,
+ * assuming clockwise direction, and updates the read-only preview panel.
+ */
+function updateCardPreview() {
+  if (!cardPreviewEl) return;
+
+  // Extract raw token string from editable pills
+  const clone = cardEditable.cloneNode(true);
+  clone.querySelectorAll('.mutiny-pill').forEach(pill => {
+    pill.replaceWith(pill.dataset.type);
   });
+  const rawText = clone.textContent.trim();
+
+  if (!rawText) {
+    cardPreviewEl.innerHTML = 'Start writing to see your card...';
+    cardPreviewEl.classList.add('is-empty');
+    return;
+  }
+  cardPreviewEl.classList.remove('is-empty');
+
+  // Resolve tokens — builder player is "current", clockwise (direction = 1)
+  const pCount = activePlayers.length;
+  if (pCount === 0) { cardPreviewEl.textContent = rawText; return; }
+
+  const builderPlayer = activePlayers.find(p => p.id === activeBuilderPlayerId);
+  if (!builderPlayer) { cardPreviewEl.textContent = rawText; return; }
+
+  const cIndex  = activePlayers.indexOf(builderPlayer);
+  const pPlayer  = builderPlayer.name;
+  const pLeft    = activePlayers[(cIndex - 1 + pCount) % pCount].name;
+  const pRight   = activePlayers[(cIndex + 1) % pCount].name;
+  const pNext    = pRight; // clockwise
+  const pAcross  = activePlayers[(cIndex + Math.floor(pCount / 2)) % pCount].name;
+  let randIdx    = Math.floor(Math.random() * pCount);
+  while (randIdx === cIndex && pCount > 1) randIdx = Math.floor(Math.random() * pCount);
+  const pRandom  = activePlayers[randIdx].name;
+  const pDir     = 'clockwise';
+
+  const resolved = rawText
+    .replace(/{player}/g,    pPlayer)
+    .replace(/{left}/g,      pLeft)
+    .replace(/{right}/g,     pRight)
+    .replace(/{next}/g,      pNext)
+    .replace(/{across}/g,    pAcross)
+    .replace(/{random}/g,    pRandom)
+    .replace(/{direction}/g, pDir);
+
+  // Wrap resolved values in styled preview-token spans
+  const uniqueValues = [pPlayer, pLeft, pRight, pNext, pAcross, pRandom, pDir]
+    .filter((v, i, arr) => arr.indexOf(v) === i)
+    .map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+
+  let highlighted = resolved;
+  if (uniqueValues.length) {
+    const regex = new RegExp(`(${uniqueValues.join('|')})`, 'g');
+    highlighted = resolved.replace(regex, '<span class="preview-token">$1</span>');
+  }
+
+  cardPreviewEl.innerHTML = highlighted;
 }
 
 function closeCardBuilder() {
   cardBuilderOverlay.classList.remove('is-visible');
   activeBuilderPlayerId = null;
-  // Blur to dismiss keyboard on mobile
   cardEditable.blur();
+  if (cardPreviewEl) {
+    cardPreviewEl.innerHTML = 'Start writing to see your card...';
+    cardPreviewEl.classList.add('is-empty');
+  }
 }
 
 // Token chip logic — tap to insert at cursor
@@ -363,25 +317,39 @@ function setupTokenChips() {
         sel.addRange(range);
       }
       insertToken(token);
+      updateCardPreview();
     }
   });
+
+  // Setup template buttons
+  document.querySelectorAll('.card-template-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      cardEditable.innerHTML = btn.dataset.template;
+      updateCardPreview();
+      if (navigator.vibrate) navigator.vibrate(20);
+    });
+  });
+
+  // Live preview on every keystroke
+  cardEditable.addEventListener('input', updateCardPreview);
 }
 
 function insertTokenAtCursor(token, chipEl) {
-  // Visual feedback on chip
   chipEl.classList.add('inserting');
   setTimeout(() => chipEl.classList.remove('inserting'), 300);
 
   cardEditable.focus();
   insertToken(token);
+  updateCardPreview();
   if (navigator.vibrate) navigator.vibrate(30);
 }
 
-function insertToken(token) {
+function insertToken(tokenHtml) {
   const sel = window.getSelection();
   if (!sel || !sel.rangeCount) {
     // If no selection, just append
-    cardEditable.textContent += token;
+    cardEditable.insertAdjacentHTML('beforeend', tokenHtml);
     return;
   }
 
@@ -398,11 +366,13 @@ function insertToken(token) {
   }
 
   range.deleteContents();
-  const textNode = document.createTextNode(token);
-  range.insertNode(textNode);
+  const temp = document.createElement('div');
+  temp.innerHTML = tokenHtml;
+  const node = temp.firstChild;
+  range.insertNode(node);
 
   // Move cursor after the inserted token
-  range.setStartAfter(textNode);
+  range.setStartAfter(node);
   range.collapse(true);
   sel.removeAllRanges();
   sel.addRange(range);
@@ -412,14 +382,20 @@ function insertToken(token) {
 cardBuilderSave.addEventListener('click', () => {
   if (!activeBuilderPlayerId) return;
 
-  const rawText = cardEditable.textContent.trim();
+  // Convert pills back to raw text for storage
+  const clone = cardEditable.cloneNode(true);
+  clone.querySelectorAll('.mutiny-pill').forEach(pill => {
+    pill.replaceWith(pill.dataset.type);
+  });
+
+  const rawText = clone.textContent.trim();
   if (!rawText) {
     // Nothing written — just close
     closeCardBuilder();
     return;
   }
 
-  const tags = ['custom', ...builderActiveTags];
+  const tags = ['custom'];
   saveCustomCard(activeBuilderPlayerId, { text: rawText, tags });
 
   // Haptic + close
@@ -437,16 +413,7 @@ cardBuilderSave.addEventListener('click', () => {
   }
 });
 
-cardBuilderClear.addEventListener('click', () => {
-  cardEditable.textContent = '';
-  builderActiveTags = [];
-  renderBuilderTags();
-  if (activeBuilderPlayerId) {
-    clearCustomCard(activeBuilderPlayerId);
-    renderCrewManifest();
-  }
-  if (navigator.vibrate) navigator.vibrate(20);
-});
+
 
 cardBuilderClose.addEventListener('click', closeCardBuilder);
 
@@ -584,6 +551,7 @@ function startGame() {
 
   currentPlayerIndex = 0;
   updateTurnUI();
+  if (window.UI && window.UI.startAnimatedCanvases) window.UI.startAnimatedCanvases();
 
   coin.addEventListener('click', handleSpin);
   mutinyContinueBtn.addEventListener('click', handleContinue);
@@ -592,10 +560,10 @@ function startGame() {
   exitStayBtn.addEventListener('click', () => exitOverlay.classList.remove('is-visible'));
   exitQuitBtn.addEventListener('click', () => window.location.href = 'index.html');
 
-  filterBtn.addEventListener('click', openFilterDrawer);
-  filterCloseBtn.addEventListener('click', closeFilterDrawer);
-  filterOverlay.addEventListener('click', closeFilterDrawer);
-  renderFilterDrawer();
+  filterBtn.addEventListener('click', openSettingsDrawer);
+  filterCloseBtn.addEventListener('click', closeSettingsDrawer);
+  filterOverlay.addEventListener('click', closeSettingsDrawer);
+  renderSettingsDrawer();
 
   const playerTag = document.querySelector('#mutiny-card .modal-player-tag');
 
@@ -657,8 +625,25 @@ function fillDeck() {
     .map(t => t.key)
     .filter(tag => !selectedTags.includes(tag));
 
+  // Determine active packs
+  let activePackIds = null;
+  try {
+    const data = localStorage.getItem('kings-gambit-mutiny-packs');
+    if (data) activePackIds = JSON.parse(data);
+  } catch (e) {}
+
+  let allPackCards = [];
+  if (window.MutinyPacks) {
+    window.MutinyPacks.forEach(pack => {
+      // If activePackIds is null, all packs are active by default
+      if (!activePackIds || activePackIds.includes(pack.id)) {
+        allPackCards.push(...pack.cards);
+      }
+    });
+  }
+
   // Standard cards filtered by tag preferences
-  const standardCards = mutinyCards.filter(card => {
+  const standardCards = allPackCards.filter(card => {
     const filterableTags = card.tags.filter(t => t !== 'persistent' && t !== 'cbtm');
     if (filterableTags.length === 0) return true;
     return !filterableTags.every(tag => disabledTags.includes(tag));
@@ -690,6 +675,10 @@ function updateTurnUI() {
   }
 
   turnName.textContent = `${dirLabel} Capt. ${p.name}'s turn`;
+
+  if (window.UI && window.UI.startAnimatedCanvases) {
+    window.UI.startAnimatedCanvases();
+  }
 }
 
 function getReplacedPrompt(rawString) {
@@ -712,13 +701,16 @@ function getReplacedPrompt(rawString) {
   const acrossIdx = (cIndex + Math.floor(pCount / 2)) % pCount;
   const pAcross = activePlayers[acrossIdx].name;
 
+  const pDir = gameDirection === 1 ? 'clockwise' : 'counter-clockwise';
+
   return rawString
     .replace(/{player}/g, pPlayer)
     .replace(/{left}/g,   pLeft)
     .replace(/{right}/g,  pRight)
     .replace(/{next}/g,   pNext)
     .replace(/{random}/g, pRandom)
-    .replace(/{across}/g, pAcross);
+    .replace(/{across}/g, pAcross)
+    .replace(/{direction}/g, pDir);
 }
 
 // ──────────────────────────────────────────────
@@ -731,7 +723,10 @@ function buildCrewRing(highlightIndex) {
   ring.innerHTML = '';
 
   const count = activePlayers.length;
-  const radius = 72; // px from centre to avatar centre
+  // Use container width for outer edge calculation
+  const ringWidth = ring.clientWidth || 200;
+  const avatarHalfWidth = 24; // Assuming 48px avatar
+  const radius = (ringWidth / 2) - avatarHalfWidth;
 
   activePlayers.forEach((p, i) => {
     const angleDeg = (360 / count) * i - 90; // start at top
@@ -741,7 +736,10 @@ function buildCrewRing(highlightIndex) {
 
     const item = document.createElement('div');
     item.className = `crew-ring-avatar${i === highlightIndex ? ' is-active' : ''}`;
-    item.style.transform = `translate(${x}px, ${y}px)`;
+    // Position with left/top so CSS transform animations don't override the translation
+    item.style.left = `calc(50% + ${x}px)`;
+    item.style.top = `calc(50% + ${y}px)`;
+    item.style.transform = `rotate(0deg)`;
 
     if (p.emoji.endsWith('.png') || p.emoji.endsWith('.gif')) {
       const imgHtml = (window.UI && window.UI.renderAvatarImg)
@@ -758,14 +756,30 @@ function buildCrewRing(highlightIndex) {
   // Drive spin animation via CSS class (also enables the sibling counter-rotation selector)
   ring.classList.toggle('rotateCW',  gameDirection === 1);
   ring.classList.toggle('rotateCCW', gameDirection === -1);
+
+  if (window.UI && window.UI.startAnimatedCanvases) {
+    window.UI.startAnimatedCanvases();
+  }
 }
 
 function handleSpin() {
   if (isSpinning) return;
   isSpinning = true;
 
-  coin.classList.remove('spin-fast');
+  coin.classList.remove('spin-fast', 'is-plank');
   void coin.offsetWidth;
+
+  const p = activePlayers[currentPlayerIndex];
+
+  let eventType = null;
+  if (window.MutinyEvents) {
+    eventType = window.MutinyEvents.evaluate(p);
+  }
+
+  if (eventType === 'PLANK') {
+    coin.classList.add('is-plank');
+  }
+
   coin.classList.add('spin-fast');
 
   setTimeout(() => {
@@ -782,6 +796,73 @@ function handleSpin() {
 
     if (navigator.vibrate) navigator.vibrate([40, 30, 80]);
 
+    if (eventType === 'PLANK') {
+      triggerPlankEvent(p);
+    } else if (eventType === 'TIDES') {
+      triggerTidesEvent();
+    } else {
+      drawStandardCard();
+    }
+  }, 1400);
+}
+
+function triggerPlankEvent(p) {
+  const transOverlay = document.getElementById('transition-overlay');
+  const plankPanel   = document.getElementById('plank-panel');
+  const plankText    = document.getElementById('plank-text');
+  const passPanel    = document.getElementById('pass-panel');
+
+  if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+
+  if (passPanel) passPanel.style.display = 'none';
+
+  if (plankText) {
+    plankText.textContent = `${p.name}, drink for as long as you can!`;
+  }
+
+  transOverlay.classList.add('is-visible');
+  if (plankPanel) {
+    plankPanel.style.display = 'flex';
+  }
+
+  setTimeout(() => {
+    if (plankPanel) plankPanel.style.display = 'none';
+    transOverlay.classList.remove('is-visible');
+    _runTransition(); // Pass the phone
+  }, 3500);
+}
+
+function triggerTidesEvent() {
+  const transOverlay  = document.getElementById('transition-overlay');
+  const reversePanel  = document.getElementById('reverse-panel');
+  const reverseDirEl  = document.getElementById('reverse-direction-text');
+  const passPanel     = document.getElementById('pass-panel');
+
+  if (passPanel) passPanel.style.display = 'none';
+
+  gameDirection *= -1;
+  if (navigator.vibrate) navigator.vibrate([100, 80, 100]); 
+  const dirWord = gameDirection === 1 ? 'CLOCKWISE ↻' : 'COUNTER-CLOCKWISE ↺';
+  if (reverseDirEl) reverseDirEl.textContent = `Direction is now ${dirWord}`;
+
+  transOverlay.classList.add('is-visible');
+  if (reversePanel) {
+    reversePanel.style.display = 'flex';
+    const svg = reversePanel.querySelector('.wind-lines');
+    if (svg) {
+      const clone = svg.cloneNode(true);
+      svg.replaceWith(clone);
+    }
+  }
+  
+  setTimeout(() => {
+    if (reversePanel) reversePanel.style.display = 'none';
+    transOverlay.classList.remove('is-visible');
+    _runTransition(); // Pass the phone
+  }, 2500);
+}
+
+function drawStandardCard() {
     if (deck.length === 0) fillDeck();
     const cardObj = deck.pop();
     const rawStr = cardObj.text;
@@ -821,7 +902,7 @@ function handleSpin() {
       if (p.emoji.endsWith('.png') || p.emoji.endsWith('.gif')) {
         const avatarHtml = (window.UI && window.UI.renderAvatarImg)
           ? window.UI.renderAvatarImg(p.emoji)
-          : `<img src="${p.emoji}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md);" draggable="false">`;
+          : `<img src="${p.emoji}" class="avatar-image" draggable="false">`;
         mutinyModalAvatar.innerHTML = avatarHtml;
       } else {
         mutinyModalAvatar.textContent = p.emoji;
@@ -836,6 +917,9 @@ function handleSpin() {
     // Snapshot static canvases after the modal renders
     if (window.UI && window.UI.snapshotStaticCanvases) {
       requestAnimationFrame(() => window.UI.snapshotStaticCanvases());
+    }
+    if (window.UI && window.UI.startAnimatedCanvases) {
+      window.UI.startAnimatedCanvases();
     }
 
     if (cardObj.tags.includes('cbtm')) {
@@ -869,7 +953,6 @@ function handleSpin() {
       curseText.textContent = finalPrompt;
       curseBanner.style.display = 'block';
     }
-  }, 1400);
 }
 
 function _closeMutinyCard() {
@@ -899,13 +982,9 @@ function handleContinue() {
 // TRANSITION SYSTEM — Reverse & Pass the Phone
 // ──────────────────────────────────────────────
 
-const REVERSE_CHANCE = 0.15; // 15% probability
-
 function _runTransition() {
   const transOverlay  = document.getElementById('transition-overlay');
-  const reversePanel  = document.getElementById('reverse-panel');
   const passPanel     = document.getElementById('pass-panel');
-  const reverseDirEl  = document.getElementById('reverse-direction-text');
   const passAvatarEl  = document.getElementById('pass-avatar');
   const passNameEl    = document.getElementById('pass-name');
 
@@ -917,40 +996,16 @@ function _runTransition() {
     return;
   }
 
-  const didReverse = Math.random() < REVERSE_CHANCE;
-
-  if (didReverse) {
-    gameDirection *= -1;
-    if (navigator.vibrate) navigator.vibrate([100, 80, 100]); // two long pulses
-
-    const dirWord = gameDirection === 1 ? 'CLOCKWISE ↻' : 'COUNTER-CLOCKWISE ↺';
-    if (reverseDirEl) reverseDirEl.textContent = `Direction is now ${dirWord}`;
-
-    if (reversePanel) {
-      reversePanel.style.display = 'flex';
-      // Restart wind-line animation by cloning & replacing the SVG
-      const svg = reversePanel.querySelector('.wind-lines');
-      if (svg) {
-        const clone = svg.cloneNode(true);
-        svg.replaceWith(clone);
-      }
-    }
-    if (passPanel)    passPanel.style.display    = 'none';
-    transOverlay.classList.add('is-visible');
-
-    // After 2s switch to Pass panel
-    setTimeout(() => {
-      if (reversePanel) reversePanel.style.display = 'none';
-      _showPassPanel(passPanel, passAvatarEl, passNameEl, transOverlay);
-    }, 2000);
-  } else {
-    if (reversePanel) reversePanel.style.display = 'none';
-    transOverlay.classList.add('is-visible');
-    _showPassPanel(passPanel, passAvatarEl, passNameEl, transOverlay);
-  }
+  transOverlay.classList.add('is-visible');
+  _showPassPanel(passPanel, passAvatarEl, passNameEl, transOverlay);
 }
 
 function _showPassPanel(passPanel, passAvatarEl, passNameEl, transOverlay) {
+  const reversePanel = document.getElementById('reverse-panel');
+  const plankPanel   = document.getElementById('plank-panel');
+  if (reversePanel) reversePanel.style.display = 'none';
+  if (plankPanel) plankPanel.style.display = 'none';
+
   // Calculate next player AFTER potential direction flip
   const pCount  = activePlayers.length;
   const nextIdx = (currentPlayerIndex + gameDirection + pCount) % pCount;
@@ -975,6 +1030,10 @@ function _showPassPanel(passPanel, passAvatarEl, passNameEl, transOverlay) {
     passAvatarEl.style.animation = 'none';
     void passAvatarEl.offsetWidth; // reflow
     passAvatarEl.style.animation = '';
+  }
+
+  if (window.UI && window.UI.startAnimatedCanvases) {
+    window.UI.startAnimatedCanvases();
   }
 
   if (navigator.vibrate) navigator.vibrate(60); // one short pulse
@@ -1005,22 +1064,23 @@ function triggerFlashIfGroup(text) {
 }
 
 // ══════════════════════════════════════════════
-// FILTER DRAWER
+// SETTINGS DRAWER
 // ══════════════════════════════════════════════
 
-function openFilterDrawer() {
+function openSettingsDrawer() {
   filterOverlay.classList.add('is-visible');
   filterDrawer.classList.add('is-open');
+  renderSettingsDrawer();
 }
 
-function closeFilterDrawer() {
+function closeSettingsDrawer() {
   filterOverlay.classList.remove('is-visible');
   filterDrawer.classList.remove('is-open');
 }
 
-function renderFilterDrawer() {
+function renderSettingsDrawer() {
+  // 1. Rules Tab (Tags)
   filterList.innerHTML = '';
-
   ALL_TAGS.forEach(tag => {
     const row = document.createElement('div');
     row.className = 'filter-tag-row';
@@ -1057,7 +1117,129 @@ function renderFilterDrawer() {
     row.appendChild(toggle);
     filterList.appendChild(row);
   });
+
+  // Events Toggle
+  let settings = {};
+  try {
+    const data = localStorage.getItem('kings-gambit-settings');
+    if (data) settings = JSON.parse(data);
+  } catch (e) {}
+
+  const tidesToggle = document.getElementById('setting-tides');
+  const plankToggle = document.getElementById('setting-plank');
+  if (tidesToggle) {
+    tidesToggle.checked = settings.mutinyTidesEnabled !== false;
+    tidesToggle.onchange = () => {
+      settings.mutinyTidesEnabled = tidesToggle.checked;
+      localStorage.setItem('kings-gambit-settings', JSON.stringify(settings));
+    };
+  }
+  if (plankToggle) {
+    plankToggle.checked = settings.mutinyPlankEnabled !== false;
+    plankToggle.onchange = () => {
+      settings.mutinyPlankEnabled = plankToggle.checked;
+      localStorage.setItem('kings-gambit-settings', JSON.stringify(settings));
+    };
+  }
+
+  // 2. Packs Tab
+  const packList = document.getElementById('pack-list');
+  if (packList) {
+    packList.innerHTML = '';
+    let activePackIds = null;
+    try {
+      const pData = localStorage.getItem('kings-gambit-mutiny-packs');
+      if (pData) activePackIds = JSON.parse(pData);
+    } catch(e) {}
+
+    if (window.MutinyPacks) {
+      window.MutinyPacks.forEach(pack => {
+        const item = document.createElement('div');
+        item.className = 'pack-item';
+        
+        const isPackActive = !activePackIds || activePackIds.includes(pack.id);
+        
+        const info = document.createElement('div');
+        info.className = 'pack-info';
+        info.innerHTML = `<span class="pack-name">${pack.name}</span><span class="pack-desc">${pack.description}</span>`;
+        
+        const toggle = document.createElement('label');
+        toggle.className = 'toggle-switch';
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.checked = isPackActive;
+        input.onchange = () => {
+          let currentActive = activePackIds || window.MutinyPacks.map(p => p.id);
+          if (input.checked && !currentActive.includes(pack.id)) currentActive.push(pack.id);
+          else if (!input.checked) currentActive = currentActive.filter(id => id !== pack.id);
+          activePackIds = currentActive;
+          localStorage.setItem('kings-gambit-mutiny-packs', JSON.stringify(currentActive));
+          fillDeck();
+        };
+        const slider = document.createElement('span');
+        slider.className = 'toggle-slider';
+        toggle.appendChild(input);
+        toggle.appendChild(slider);
+        
+        item.appendChild(info);
+        item.appendChild(toggle);
+        packList.appendChild(item);
+      });
+    }
+  }
+
+  // 3. Secret Tab
+  const secretList = document.getElementById('secret-player-list');
+  if (secretList) {
+    secretList.innerHTML = '';
+    const players = window.Storage.getActivePlayers();
+    players.forEach(p => {
+      const item = document.createElement('div');
+      item.className = 'secret-item';
+      
+      const pInfo = document.createElement('div');
+      pInfo.className = 'secret-player';
+      const av = document.createElement('div');
+      av.className = 'secret-avatar';
+      if (p.emoji.endsWith('.png') || p.emoji.endsWith('.gif')) {
+        av.innerHTML = window.UI && window.UI.renderAvatarImg ? window.UI.renderAvatarImg(p.emoji) : `<img src="${p.emoji}" class="avatar-image" draggable="false">`;
+      } else {
+        av.textContent = p.emoji;
+      }
+      pInfo.appendChild(av);
+      const n = document.createElement('span');
+      n.textContent = p.name;
+      pInfo.appendChild(n);
+      
+      const toggle = document.createElement('button');
+      toggle.className = `secret-toggle${p.is_planked ? ' is-active' : ''}`;
+      toggle.innerHTML = '⚓';
+      toggle.onclick = () => {
+        p.is_planked = !p.is_planked;
+        toggle.className = `secret-toggle${p.is_planked ? ' is-active' : ''}`;
+        window.Storage.updatePlayer(p.id, p.name, p.emoji, p.is_planked);
+        activePlayers = window.Storage.getActivePlayers();
+      };
+      
+      item.appendChild(pInfo);
+      item.appendChild(toggle);
+      secretList.appendChild(item);
+    });
+  }
 }
+
+// Setup tabs
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.settings-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.settings-pane').forEach(p => p.classList.remove('is-active'));
+      tab.classList.add('active');
+      const target = document.getElementById(tab.dataset.target);
+      if (target) target.classList.add('is-active');
+    });
+  });
+});
 
 // ══════════════════════════════════════════════
 // BOOT

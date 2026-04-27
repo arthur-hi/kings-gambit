@@ -28,7 +28,8 @@ function addPlayer(name, emoji) {
     id,
     name,
     emoji,
-    isActive: true
+    isActive: true,
+    is_planked: false
   });
   savePlayers(players);
   return id;
@@ -48,12 +49,13 @@ function deletePlayer(id) {
   savePlayers(players);
 }
 
-function updatePlayer(id, name, emoji) {
+function updatePlayer(id, name, emoji, is_planked = false) {
   const players = getPlayers();
   const index = players.findIndex(p => p.id === id);
   if (index !== -1) {
     players[index].name = name;
     players[index].emoji = emoji;
+    if (is_planked !== undefined) players[index].is_planked = is_planked;
     savePlayers(players);
   }
 }
@@ -139,17 +141,30 @@ function getAvatarMode() {
  * @param {string} src  Path to the avatar image.
  * @returns {string} HTML string.
  */
-function renderAvatarImg(src) {
-  const mode = getAvatarMode();
+function renderAvatarImg(src, forceAnimate = false) {
+  const mode = forceAnimate ? 'animated' : getAvatarMode();
   if (mode === 'static' && src.endsWith('.gif')) {
     return `<canvas class="avatar-image avatar-static-canvas" data-gif-src="${src}" width="80" height="80"></canvas>`;
   }
   if (mode === 'once' && src.endsWith('.gif')) {
-    // Append timestamp to force the GIF to restart from frame 1 each render
-    const freshSrc = `${src}?t=${Date.now()}`;
-    return `<img src="${freshSrc}" class="avatar-image" draggable="false" style="pointer-events:none;">`;
+    return `<canvas class="avatar-image avatar-animated-canvas" data-gif-src="${src}" data-gif-mode="once" width="80" height="80"></canvas>`;
+  }
+  if (mode === 'animated' && src.endsWith('.gif')) {
+    return `<canvas class="avatar-image avatar-animated-canvas" data-gif-src="${src}" data-gif-mode="loop" width="80" height="80"></canvas>`;
   }
   return `<img src="${src}" class="avatar-image" draggable="false">`;
+}
+
+function startAnimatedCanvases() {
+  if (window.GifEngine) {
+    document.querySelectorAll('.avatar-animated-canvas').forEach(canvas => {
+      if (canvas.dataset.animating) return;
+      const src = canvas.dataset.gifSrc;
+      const mode = canvas.dataset.gifMode || 'loop';
+      window.GifEngine.render(canvas, src, mode);
+      canvas.dataset.animating = '1';
+    });
+  }
 }
 
 /**
@@ -200,5 +215,5 @@ function showToast(message, duration = 3000) {
   }, duration);
 }
 
-window.UI = { showToast, getAvatarMode, renderAvatarImg, snapshotStaticCanvases };
+window.UI = { showToast, getAvatarMode, renderAvatarImg, snapshotStaticCanvases, startAnimatedCanvases };
 
