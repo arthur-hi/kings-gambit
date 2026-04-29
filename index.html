@@ -54,13 +54,13 @@
       <!-- Mutiny Game Card -->
       <a href="mutiny.html" id="game-mutiny" class="game-card is-locked">
         <h3 class="game-card-title">Mutiny</h3>
-        <p class="game-card-desc">Spin the coin for drinking prompts.<br>Kings Gambit's premiere drinking game.</p>
+        <p class="game-card-desc">Spin the coin to test your luck and risk your dignity.<br>Kings Gambit's premiere drinking game.</p>
       </a>
 
       <!-- Grand Prix Game Card -->
       <a href="grand-prix.html" id="game-grand-prix" class="game-card is-locked">
-        <h3 class="game-card-title">The Grand Prix</h3>
-        <p class="game-card-desc">A 5-round minigame circuit.</p>
+        <h3 class="game-card-title">Grand Prix</h3>
+        <p class="game-card-desc">A 5-round drinking circuit with indiviual and team based minigames.<br>Atleast 4 players needed.</p>
       </a>
 
       <!-- Ring of Fire Game Card -->
@@ -89,10 +89,23 @@
       <label class="input-label" for="player-name">Name</label>
       <input type="text" id="player-name" class="input-text" placeholder="Enter name" autocomplete="off" maxlength="12">
       <div class="emoji-selector">
-        <label>Pick an Avatar:</label>
-        <div id="pack-tabs" class="pack-tabs mb-2"></div>
-        <div id="emoji-grid" class="emoji-grid mt-2">
-          <!-- Populated via js -->
+        <br>
+        <div class="drawer-toggles mb-2" style="display: flex; gap: 8px;">
+          <button id="toggle-avatar-btn" class="btn-3d" style="flex: 1; padding: 8px;">Choose Avatar</button>
+          <button id="toggle-frame-btn" class="btn-3d secondary" style="flex: 1; padding: 8px;">Choose Frame</button>
+        </div>
+        <br>
+        <div id="avatar-section">
+          <div id="pack-tabs" class="pack-tabs mb-2"></div>
+          <div id="emoji-grid" class="emoji-grid mt-2">
+            <!-- Populated via js -->
+          </div>
+        </div>
+
+        <div id="frame-section" style="display: none;">
+          <div id="frame-grid" class="emoji-grid mt-2">
+            <!-- Populated via js -->
+          </div>
         </div>
       </div>
       <button id="save-player-btn" class="btn-3d btn-primary">Add Player</button>

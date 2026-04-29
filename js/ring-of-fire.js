@@ -144,12 +144,13 @@ function updateTurnUI() {
   const p = activePlayers[currentPlayerIndex];
 
   if (p.emoji.endsWith('.png') || p.emoji.endsWith('.gif')) {
-    turnEmoji.innerHTML = `<img src="${p.emoji}" class="avatar-image" draggable="false">`;
+    turnEmoji.innerHTML = window.UI ? window.UI.renderAvatarImg(p.emoji) : `<img src="${p.emoji}" class="avatar-image" draggable="false">`;
   } else {
     turnEmoji.textContent = p.emoji;
   }
 
   turnName.textContent = `${p.name}'s turn`;
+  if (window.UI && window.UI.startAnimatedCanvases) window.UI.startAnimatedCanvases();
 }
 
 function advanceTurn() {
@@ -249,7 +250,7 @@ function showRuleModal(value) {
   const ruleModalName = document.getElementById('rof-modal-name');
 
   if (p.emoji.endsWith('.png') || p.emoji.endsWith('.gif')) {
-    ruleModalAvatar.innerHTML = `<img src="${p.emoji}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md);" draggable="false">`;
+    ruleModalAvatar.innerHTML = window.UI ? window.UI.renderAvatarImg(p.emoji) : `<img src="${p.emoji}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md);" draggable="false">`;
   } else {
     ruleModalAvatar.textContent = p.emoji;
   }
@@ -267,6 +268,7 @@ function showRuleModal(value) {
   }
 
   ruleOverlay.classList.add('is-visible');
+  if (window.UI && window.UI.startAnimatedCanvases) window.UI.startAnimatedCanvases();
 }
 
 ruleContinueBtn.addEventListener('click', () => {

@@ -241,7 +241,7 @@ class GifRendererEngine {
     // Stop any existing animation on this canvas
     this.stop(canvas);
 
-    if (true) { //!('ImageDecoder' in window)
+    if (!('ImageDecoder' in window)) {
       return this.renderFallback(canvas, src, mode);
     }
     const ctx = canvas.getContext('2d');

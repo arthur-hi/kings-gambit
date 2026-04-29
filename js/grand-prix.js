@@ -148,7 +148,7 @@ function showStartingGrid() {
   gridOrder.forEach((p, i) => {
     const isLeft = i % 2 === 0;
     let emojiHtml = p.emoji.endsWith('.png') || p.emoji.endsWith('.gif') 
-      ? `<img src="${p.emoji}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">` 
+      ? (window.UI ? window.UI.renderAvatarImg(p.emoji) : `<img src="${p.emoji}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">`) 
       : p.emoji;
       
     const nameHtml = `<div style="font-size: 1.1rem; font-weight: 900; color: white; margin: 0 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90px;">${p.name}</div>`;
@@ -167,6 +167,7 @@ function showStartingGrid() {
   
   html += `</div>`;
   gridPanel.innerHTML = html;
+  if (window.UI && window.UI.startAnimatedCanvases) window.UI.startAnimatedCanvases();
   
   let step = 1;
   const lightInterval = setInterval(() => {
@@ -227,7 +228,7 @@ async function showLadder() {
       let extraIcon = (p.id === fastestLapId) ? `<span style="color: var(--color-fl); margin-left: 8px;">⏱️</span>` : '';
       
       let emojiHtml = p.emoji.endsWith('.png') || p.emoji.endsWith('.gif') 
-        ? `<img src="${p.emoji}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">` 
+        ? (window.UI ? window.UI.renderAvatarImg(p.emoji) : `<img src="${p.emoji}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">`) 
         : p.emoji;
         
       item.innerHTML = `
@@ -245,6 +246,7 @@ async function showLadder() {
       `;
       ladderList.appendChild(item);
     });
+    if (window.UI && window.UI.startAnimatedCanvases) window.UI.startAnimatedCanvases();
   };
   
   renderList(sortedP, lastScores);
@@ -1346,7 +1348,7 @@ function playThePointingGame() {
       activePlayers.forEach(p => {
         if (p.id !== player.id) {
            let emojiHtml = p.emoji.endsWith('.png') || p.emoji.endsWith('.gif') 
-             ? `<img src="${p.emoji}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">` 
+             ? (window.UI ? window.UI.renderAvatarImg(p.emoji) : `<img src="${p.emoji}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">`) 
              : p.emoji;
              
            html += `
@@ -1359,6 +1361,7 @@ function playThePointingGame() {
       
       html += `</div>`;
       minigameArena.innerHTML = html;
+      if (window.UI && window.UI.startAnimatedCanvases) window.UI.startAnimatedCanvases();
       
       document.querySelectorAll('.pg-target').forEach(btn => {
         btn.onclick = (e) => {
@@ -1737,7 +1740,7 @@ function showPodium() {
       const block = document.createElement('div');
       block.className = `podium-block ${pos.class}`;
       let emojiHtml = pos.p.emoji.endsWith('.png') || pos.p.emoji.endsWith('.gif') 
-        ? `<img src="${pos.p.emoji}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">` 
+        ? (window.UI ? window.UI.renderAvatarImg(pos.p.emoji) : `<img src="${pos.p.emoji}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">`) 
         : pos.p.emoji;
       
       block.innerHTML = `
@@ -1757,7 +1760,7 @@ function showPodium() {
       const loser = document.createElement('div');
       loser.className = 'podium-loser';
       let emojiHtml = p.emoji.endsWith('.png') || p.emoji.endsWith('.gif') 
-          ? `<img src="${p.emoji}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">` 
+          ? (window.UI ? window.UI.renderAvatarImg(p.emoji) : `<img src="${p.emoji}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">`) 
           : p.emoji;
       loser.innerHTML = `
         <div class="avatar" style="width: 50px; height: 50px; font-size: 1.5rem; display:flex; align-items:center; justify-content:center; border-color: #334155;">
@@ -1769,6 +1772,7 @@ function showPodium() {
       losersContainer.appendChild(loser);
     });
   }
+  if (window.UI && window.UI.startAnimatedCanvases) window.UI.startAnimatedCanvases();
   
   // Champagne explosion!
   setTimeout(() => {
@@ -1866,7 +1870,7 @@ function renderGPHistory() {
   positions.forEach(pos => {
     if (pos.p) {
       let emojiHtml = pos.p.emoji.endsWith('.png') || pos.p.emoji.endsWith('.gif') 
-        ? `<img src="${pos.p.emoji}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">` 
+        ? (window.UI ? window.UI.renderAvatarImg(pos.p.emoji) : `<img src="${pos.p.emoji}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">`) 
         : pos.p.emoji;
         
       html += `
@@ -1886,7 +1890,7 @@ function renderGPHistory() {
     html += `<div class="ladder-list" style="max-height: 200px; overflow-y:auto; padding-right:8px; margin-bottom: 24px; text-align:left;">`;
     rest.forEach(p => {
       let emojiHtml = p.emoji.endsWith('.png') || p.emoji.endsWith('.gif') 
-        ? `<img src="${p.emoji}" style="width:32px; height:32px; object-fit:cover; border-radius:8px;">` 
+        ? (window.UI ? window.UI.renderAvatarImg(p.emoji) : `<img src="${p.emoji}" style="width:32px; height:32px; object-fit:cover; border-radius:8px;">`) 
         : `<span style="font-size:1.5rem;">${p.emoji}</span>`;
         
       html += `
@@ -1909,6 +1913,7 @@ function renderGPHistory() {
   }
   
   container.innerHTML = html;
+  if (window.UI && window.UI.startAnimatedCanvases) window.UI.startAnimatedCanvases();
 }
 
 window.addEventListener('DOMContentLoaded', init);

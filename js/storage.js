@@ -29,7 +29,9 @@ function addPlayer(name, emoji) {
     name,
     emoji,
     isActive: true,
-    is_planked: false
+    is_planked: false,
+    unlocked_frames: [],
+    active_frame: null
   });
   savePlayers(players);
   return id;
@@ -49,14 +51,27 @@ function deletePlayer(id) {
   savePlayers(players);
 }
 
-function updatePlayer(id, name, emoji, is_planked = false) {
+function updatePlayer(id, name, emoji, is_planked = undefined, active_frame = undefined) {
   const players = getPlayers();
   const index = players.findIndex(p => p.id === id);
   if (index !== -1) {
     players[index].name = name;
     players[index].emoji = emoji;
     if (is_planked !== undefined) players[index].is_planked = is_planked;
+    if (active_frame !== undefined) players[index].active_frame = active_frame;
     savePlayers(players);
+  }
+}
+
+function unlockFrame(id, frameId) {
+  const players = getPlayers();
+  const index = players.findIndex(p => p.id === id);
+  if (index !== -1) {
+    if (!players[index].unlocked_frames) players[index].unlocked_frames = [];
+    if (!players[index].unlocked_frames.includes(frameId)) {
+      players[index].unlocked_frames.push(frameId);
+      savePlayers(players);
+    }
   }
 }
 
@@ -116,6 +131,7 @@ window.Storage = {
   togglePlayerActive,
   deletePlayer,
   updatePlayer,
+  unlockFrame,
   getActivePlayers,
   getGPStats,
   recordGPMatch,
@@ -141,18 +157,37 @@ function getAvatarMode() {
  * @param {string} src  Path to the avatar image.
  * @returns {string} HTML string.
  */
-function renderAvatarImg(src, forceAnimate = false) {
+function renderAvatarImg(playerOrSrc, forceAnimate = false) {
+  let src, activeFrame;
+  if (typeof playerOrSrc === 'string') {
+    src = playerOrSrc;
+    const p = getPlayers().find(p => p.emoji === src);
+    activeFrame = p ? p.active_frame : null;
+  } else {
+    src = playerOrSrc.emoji;
+    activeFrame = playerOrSrc.active_frame;
+  }
+
   const mode = forceAnimate ? 'animated' : getAvatarMode();
+  let innerHtml = '';
+  
   if (mode === 'static' && src.endsWith('.gif')) {
-    return `<canvas class="avatar-image avatar-static-canvas" data-gif-src="${src}" width="80" height="80"></canvas>`;
+    innerHtml = `<canvas class="avatar-image avatar-static-canvas" data-gif-src="${src}" width="80" height="80"></canvas>`;
+  } else if (mode === 'once' && src.endsWith('.gif')) {
+    innerHtml = `<canvas class="avatar-image avatar-animated-canvas" data-gif-src="${src}" data-gif-mode="once" width="80" height="80"></canvas>`;
+  } else if (mode === 'animated' && src.endsWith('.gif')) {
+    innerHtml = `<canvas class="avatar-image avatar-animated-canvas" data-gif-src="${src}" data-gif-mode="loop" width="80" height="80"></canvas>`;
+  } else {
+    innerHtml = `<img src="${src}" class="avatar-image" draggable="false">`;
   }
-  if (mode === 'once' && src.endsWith('.gif')) {
-    return `<canvas class="avatar-image avatar-animated-canvas" data-gif-src="${src}" data-gif-mode="once" width="80" height="80"></canvas>`;
+
+  if (activeFrame) {
+    return `<div style="position: relative; width: 100%; height: 100%; overflow: visible;">
+      <div id="mutiny-card-avatar" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; border-radius: inherit;">${innerHtml}</div>
+      <img src="frames/mutiny/${activeFrame}.png" style="position: absolute; top: -12.5%; left: -12.5%; width: 125%; height: 125%; z-index: 10; object-fit: cover; pointer-events: none; image-rendering: pixelated;" draggable="false">
+    </div>`;
   }
-  if (mode === 'animated' && src.endsWith('.gif')) {
-    return `<canvas class="avatar-image avatar-animated-canvas" data-gif-src="${src}" data-gif-mode="loop" width="80" height="80"></canvas>`;
-  }
-  return `<img src="${src}" class="avatar-image" draggable="false">`;
+  return innerHtml;
 }
 
 function startAnimatedCanvases() {
@@ -217,3 +252,24 @@ function showToast(message, duration = 3000) {
 
 window.UI = { showToast, getAvatarMode, renderAvatarImg, snapshotStaticCanvases, startAnimatedCanvases };
 
+window.frame = {
+  unlock: (frameId) => {
+    const players = window.Storage.getPlayers();
+    let updated = false;
+    
+    players.forEach(p => {
+      if (!p.unlocked_frames) p.unlocked_frames = ['default'];
+      if (!p.unlocked_frames.includes(frameId)) {
+        p.unlocked_frames.push(frameId);
+        updated = true;
+      }
+    });
+
+    if (updated) {
+      window.Storage.savePlayers(players);
+      console.log(`unlocked '${frameId}' for all players. reopen the drawer to see it.`);
+    } else {
+      console.log(`everyone already has '${frameId}'.`);
+    }
+  }
+};

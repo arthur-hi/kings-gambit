@@ -739,7 +739,7 @@ function buildCrewRing(highlightIndex) {
     // Position with left/top so CSS transform animations don't override the translation
     item.style.left = `calc(50% + ${x}px)`;
     item.style.top = `calc(50% + ${y}px)`;
-    item.style.transform = `rotate(0deg)`;
+    //item.style.transform = `rotate(0deg)`;
 
     if (p.emoji.endsWith('.png') || p.emoji.endsWith('.gif')) {
       const imgHtml = (window.UI && window.UI.renderAvatarImg)
@@ -766,18 +766,24 @@ function handleSpin() {
   if (isSpinning) return;
   isSpinning = true;
 
-  coin.classList.remove('spin-fast', 'is-plank');
+  coin.classList.remove('spin-fast', 'is-plank', 'is-treasure');
   void coin.offsetWidth;
 
   const p = activePlayers[currentPlayerIndex];
 
   let eventType = null;
-  if (window.MutinyEvents) {
+  if (_queuedEvent) {
+    eventType = _queuedEvent;
+    _queuedEvent = null;
+    console.log(`[mutiny] Dequeued forced event: ${eventType}`);
+  } else if (window.MutinyEvents) {
     eventType = window.MutinyEvents.evaluate(p);
   }
 
   if (eventType === 'PLANK') {
     coin.classList.add('is-plank');
+  } else if (eventType === 'TREASURE') {
+    coin.classList.add('is-treasure');
   }
 
   coin.classList.add('spin-fast');
@@ -798,6 +804,8 @@ function handleSpin() {
 
     if (eventType === 'PLANK') {
       triggerPlankEvent(p);
+    } else if (eventType === 'TREASURE') {
+      triggerTreasureEvent(p);
     } else if (eventType === 'TIDES') {
       triggerTidesEvent();
     } else {
@@ -831,6 +839,122 @@ function triggerPlankEvent(p) {
     _runTransition(); // Pass the phone
   }, 3500);
 }
+
+function triggerTreasureEvent(p) {
+  const FRAMES = [
+    'bones', 'gold-coins-and-dark-marks', 'sea-waves', 'skeletons-and-bones',
+    'skulls', 'smoking-pipes', 'steering-wheel', 'tentacles', 'under-the-sea'
+  ];
+
+  const unlocked = p.unlocked_frames || [];
+  const locked = FRAMES.filter(f => !unlocked.includes(f));
+
+  const overlay    = document.getElementById('treasure-overlay');
+  const track      = document.getElementById('treasure-track');
+  const result     = document.getElementById('treasure-result');
+  const actions    = document.getElementById('treasure-actions');
+  const winnerName = document.getElementById('treasure-winner-name');
+  const subtitle   = document.getElementById('treasure-subtitle');
+  const bgGif      = document.getElementById('treasure-bg-gif');
+
+  // Reset state
+  overlay.classList.add('is-visible');
+  track.innerHTML = '';
+  track.style.transition = 'none';
+  track.style.transform = 'translateX(0)';
+  result.style.display = 'none';
+  actions.style.display = 'none';
+  if (subtitle) subtitle.textContent = 'Opening Avatar Frame...';
+
+  // Restart background GIF
+  if (bgGif) { const s = bgGif.src; bgGif.src = ''; bgGif.src = s; }
+
+  // Pick winner
+  let winningFrame, isDuplicate = false;
+  if (locked.length === 0) {
+    isDuplicate = true;
+    winningFrame = FRAMES[Math.floor(Math.random() * FRAMES.length)];
+  } else {
+    winningFrame = locked[Math.floor(Math.random() * locked.length)];
+  }
+
+  // Build reel items
+  const TOTAL_ITEMS  = 50;
+  const WINNING_IDX  = 43;
+  const ITEM_WIDTH   = 88; // px
+  const GAP          = 8;  // px, matches CSS gap
+  const STRIDE       = ITEM_WIDTH + GAP;
+
+  const trackItems = [];
+  for (let i = 0; i < TOTAL_ITEMS; i++) {
+    const frame = (i === WINNING_IDX) ? winningFrame : FRAMES[Math.floor(Math.random() * FRAMES.length)];
+    const el = document.createElement('div');
+    el.className = 'treasure-reel-item';
+    el.innerHTML = `<img src="frames/mutiny/${frame}.png" draggable="false">`;
+    trackItems.push({ el, frame, isWinner: i === WINNING_IDX });
+    track.appendChild(el);
+  }
+
+  // Animate — wait one frame so the DOM is painted and we can measure
+  requestAnimationFrame(() => {
+    const containerWidth = track.parentElement.clientWidth || 340;
+    const CENTER = containerWidth / 2;
+
+    // We want item WINNING_IDX centred. Item i's centre is at:
+    //   8 (padding-left) + i*STRIDE + ITEM_WIDTH/2
+    // We want that to equal CENTER after translateX:
+    //   translateX = CENTER - (8 + WINNING_IDX*STRIDE + ITEM_WIDTH/2)
+    const winnerCenter = 8 + WINNING_IDX * STRIDE + ITEM_WIDTH / 2;
+    const finalX = CENTER - winnerCenter + (Math.random() * 30 - 15); // small random overshoot
+
+    // Start with item 0 centred so the reel visibly scrolls
+    const initialX = CENTER - (8 + ITEM_WIDTH / 2);
+    track.style.transform = `translateX(${initialX}px)`;
+
+    // Kick off animation after a tiny delay so the browser registers the start position
+    setTimeout(() => {
+      track.style.transition = 'transform 4s cubic-bezier(0.05, 0.85, 0.1, 1)';
+      track.style.transform = `translateX(${finalX}px)`;
+
+      // Show result after scroll lands
+      setTimeout(() => {
+        trackItems[WINNING_IDX].el.classList.add('is-winner');
+        winnerName.textContent = isDuplicate
+          ? `${winningFrame.replace(/-/g, ' ')} (duplicate — take 2 sips! 🍺)`
+          : `${winningFrame.replace(/-/g, ' ')} frame`;
+        result.style.display = 'block';
+        actions.style.display = 'flex';
+        if (subtitle) subtitle.textContent = isDuplicate ? 'Already owned...' : 'New frame unlocked!';
+      }, 4300);
+    }, 60);
+  });
+
+  const closeTreasure = () => {
+    overlay.classList.remove('is-visible');
+    _runTransition();
+  };
+
+  document.getElementById('treasure-equip-now-btn').onclick = () => {
+    if (!isDuplicate) {
+      window.Storage.unlockFrame(p.id, winningFrame);
+      window.Storage.updatePlayer(p.id, p.name, p.emoji, undefined, winningFrame);
+      p.active_frame = winningFrame;
+      if (!p.unlocked_frames) p.unlocked_frames = [];
+      if (!p.unlocked_frames.includes(winningFrame)) p.unlocked_frames.push(winningFrame);
+    }
+    closeTreasure();
+  };
+
+  document.getElementById('treasure-equip-later-btn').onclick = () => {
+    if (!isDuplicate) {
+      window.Storage.unlockFrame(p.id, winningFrame);
+      if (!p.unlocked_frames) p.unlocked_frames = [];
+      if (!p.unlocked_frames.includes(winningFrame)) p.unlocked_frames.push(winningFrame);
+    }
+    closeTreasure();
+  };
+}
+
 
 function triggerTidesEvent() {
   const transOverlay  = document.getElementById('transition-overlay');
@@ -895,16 +1019,18 @@ function drawStandardCard() {
       }
     } else {
       // Show single-player avatar, hide Crew Compass
-      if (mutinyModalAvatar) mutinyModalAvatar.style.display = '';
+      if (mutinyModalAvatar) mutinyModalAvatar.style.display = 'flex';
       if (mutinyModalName)   mutinyModalName.style.display   = '';
       if (groupVisualizer)   groupVisualizer.style.display   = 'none';
 
       if (p.emoji.endsWith('.png') || p.emoji.endsWith('.gif')) {
         const avatarHtml = (window.UI && window.UI.renderAvatarImg)
-          ? window.UI.renderAvatarImg(p.emoji)
+          ? window.UI.renderAvatarImg(p)
           : `<img src="${p.emoji}" class="avatar-image" draggable="false">`;
         mutinyModalAvatar.innerHTML = avatarHtml;
+        if (window.UI && window.UI.startAnimatedCanvases) window.UI.startAnimatedCanvases();
       } else {
+        mutinyModalAvatar.innerHTML = '';
         mutinyModalAvatar.textContent = p.emoji;
       }
       mutinyModalName.textContent = p.name;
@@ -1245,3 +1371,33 @@ document.addEventListener('DOMContentLoaded', () => {
 // BOOT
 // ══════════════════════════════════════════════
 init();
+
+// ══════════════════════════════════════════════
+// DEV TOOLS — window.mutiny
+// ══════════════════════════════════════════════
+let _queuedEvent = null;
+
+window.mutiny = {
+  /**
+   * Queue a specific event to fire on the next spin.
+   * Usage: mutiny.queue('TREASURE')  |  mutiny.queue('PLANK')  |  mutiny.queue('TIDES')
+   */
+  queue: (eventType) => {
+    const valid = ['PLANK', 'TIDES', 'TREASURE'];
+    const key = eventType.toUpperCase();
+    if (!valid.includes(key)) {
+      console.warn(`[mutiny] Unknown event '${eventType}'. Valid: ${valid.join(', ')}`);
+      return;
+    }
+    _queuedEvent = key;
+    console.log(`[mutiny] Event '${key}' queued for next spin. 🍚`);
+  },
+
+  /**
+   * Clear any queued event.
+   */
+  clear: () => {
+    _queuedEvent = null;
+    console.log('[mutiny] Queued event cleared.');
+  }
+};

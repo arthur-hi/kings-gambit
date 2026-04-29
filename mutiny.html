@@ -159,6 +159,28 @@
       display: none;
     }
 
+    /* ── Treasure face ── */
+    .mutiny-coin-treasure {
+      background:
+        radial-gradient(circle at 40% 30%, rgba(255,253,210,0.9) 0%, #fde047 14%,
+          #facc15 38%, #ca8a04 66%, #92400e 100%);
+      border: 7px solid #451a03;
+      box-shadow:
+        inset 0 10px 18px rgba(255,255,255,0.42),
+        inset 0 -10px 18px rgba(0,0,0,0.38);
+      transform: rotateY(-90deg) translateZ(1px);
+      display: none; /* hidden until treasure event */
+    }
+    .mutiny-coin.is-treasure .mutiny-coin-treasure {
+      display: flex;
+      transform: rotateY(0deg);
+    }
+    .mutiny-coin.is-treasure .mutiny-coin-heads,
+    .mutiny-coin.is-treasure .mutiny-coin-tails,
+    .mutiny-coin.is-treasure .mutiny-coin-plank {
+      display: none;
+    }
+
     .mutiny-coin-symbol {
       font-size: 4.8rem;
       line-height: 1;
@@ -320,7 +342,7 @@
     #turn-emoji {
       width: 54px !important;
       height: 54px !important;
-      border-radius: var(--radius-md) !important;
+      border-radius: 0px;
       font-size: 2.2rem !important;
       background: #0a1830 !important;
       border: 2px solid #1e4070 !important;
@@ -359,7 +381,7 @@
     .modal-tag-avatar {
       width: calc(100% / 1.5);
       height: 100%;
-      border-radius: var(--radius-md);
+      border-radius: none;
       background-color: #1e293b;
       border: 3px solid #facc15;
       box-shadow: 0 0 16px rgba(250,204,21,0.3);
@@ -367,7 +389,7 @@
       align-items: center;
       justify-content: center;
       font-size: 2.4rem;
-      overflow: hidden;
+      overflow: visible;
       flex-shrink: 0;
     }
     .modal-tag-name {
@@ -647,6 +669,9 @@
             <div class="mutiny-coin-face mutiny-coin-plank">
               <span class="mutiny-coin-symbol">🪵</span>
             </div>
+            <div class="mutiny-coin-face mutiny-coin-treasure">
+              <span class="mutiny-coin-symbol">🔱</span>
+            </div>
           </div>
           <div class="mutiny-coin-shadow-blob"></div>
         </div>
@@ -743,6 +768,34 @@
 
       </div>
     </div>
+
+    <!-- Treasure Case Opening Modal -->
+    <div id="treasure-overlay" class="treasure-overlay">
+      <div class="treasure-modal">
+        <img id="treasure-bg-gif" src="mutiny/resources/treasure.gif" alt="" aria-hidden="true" class="treasure-bg-gif">
+        <div class="treasure-content">
+          <div class="treasure-header">
+            <span class="treasure-icon">🔱</span>
+            <h2 class="treasure-title">Treasure!</h2>
+            <p class="treasure-subtitle" id="treasure-subtitle">Opening Avatar Frame...</p>
+          </div>
+          <div class="treasure-reel-wrap">
+            <div class="treasure-reel-marker"></div>
+            <div id="treasure-track" class="treasure-reel-track">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+          <div id="treasure-result" class="treasure-result" style="display:none;">
+            <p id="treasure-winner-name" class="treasure-winner-name"></p>
+          </div>
+          <div id="treasure-actions" class="treasure-actions" style="display:none;">
+            <button id="treasure-equip-now-btn" class="btn-3d" style="background-color:#facc15;color:#451a03;">✨ Equip Now</button>
+            <button id="treasure-equip-later-btn" class="btn-3d secondary">Save for Later</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
 
     <footer class="turn-bar mutiny-turn-bar" id="turn-bar">
       <div class="turn-indicator mutiny-turn-indicator">

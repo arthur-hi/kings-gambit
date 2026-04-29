@@ -39,6 +39,39 @@ let editingPlayerId = null;
 let currentPack = 'animated';
 let selectedEmoji = PACKS.animated[0];
 
+const FRAME_CATEGORIES = [
+  {
+    id: 'mutiny',
+    label: '☠️ Mutiny',
+    path: 'frames/mutiny',
+    frames: [
+      'bones', 'gold-coins-and-dark-marks', 'sea-waves', 'skeletons-and-bones',
+      'skulls', 'smoking-pipes', 'steering-wheel', 'tentacles', 'under-the-sea'
+    ]
+  },
+  {
+    id: 'grand-prix',
+    label: '🏎️ Grand Prix',
+    path: 'frames/grand-prix',
+    frames: ['rain-of-gold', 'rich-as-dog']
+  },
+  {
+    id: 'ring-of-fire',
+    label: '🔥 Ring of Fire',
+    path: 'frames/ring-of-fire',
+    frames: ['gambling', 'good-fortune']
+  },
+  {
+    id: 'handshake',
+    label: '🤝 The Handshake',
+    path: 'frames/handshake',
+    frames: ['award-winner', 'im-nuts', 'soy-maw']
+  }
+];
+// Flat list used by mutiny.js case-opening (mutiny frames only)
+const FRAMES = FRAME_CATEGORIES[0].frames;
+let selectedFrame = null;
+
 // --- Drag state ---
 let draggedElement = null;
 let dragStartX = 0;
@@ -465,6 +498,77 @@ function initEmojiGrid() {
   }
 }
 
+function initFrameGrid() {
+  const frameGrid = document.getElementById('frame-grid');
+  if (!frameGrid) return;
+  frameGrid.innerHTML = '';
+  
+  const players = window.Storage.getPlayers();
+  let playerUnlockedFrames = [];
+  if (editingPlayerId) {
+    const p = players.find(p => p.id === editingPlayerId);
+    if (p && p.unlocked_frames) playerUnlockedFrames = p.unlocked_frames;
+  }
+
+  FRAME_CATEGORIES.forEach(category => {
+    // Category header
+    const header = document.createElement('p');
+    header.style.cssText = [
+      'font-size: 0.7rem',
+      'font-weight: 800',
+      'letter-spacing: 1.5px',
+      'text-transform: uppercase',
+      'color: var(--color-text-muted)',
+      'margin: 12px 0 6px',
+      'width: 100%',
+      'grid-column: 1 / -1',
+    ].join(';');
+    header.textContent = category.label;
+    frameGrid.appendChild(header);
+
+    category.frames.forEach(frame => {
+      // Only mutiny frames are unlockable right now
+      const isMutinyFrame = category.id === 'mutiny';
+      const isUnlocked = isMutinyFrame && playerUnlockedFrames.includes(frame);
+
+      const btn = document.createElement('button');
+      btn.className = `emoji-btn ${frame === selectedFrame ? 'is-selected' : ''}`;
+      btn.style.position = 'relative';
+
+      if (!isUnlocked) {
+        btn.style.filter = 'grayscale(1)';
+        btn.style.opacity = '0.5';
+      }
+
+      btn.innerHTML = `<img src="${category.path}/${frame}.png" style="width: 100%; height: 100%; object-fit: cover;" draggable="false">`
+        + (isUnlocked ? '' : `<span style="position:absolute;bottom:2px;right:3px;font-size:0.65rem;line-height:1;">🔒</span>`);
+
+      btn.addEventListener('click', () => {
+        playerNameInput.blur();
+        if (!isUnlocked) {
+          if (window.UI && window.UI.showToast) {
+            const msg = isMutinyFrame
+              ? "You need to unlock this frame in-game first!"
+              : `${category.label.split(' ').slice(1).join(' ')} frames aren't unlockable yet — coming soon!`;
+            window.UI.showToast(msg);
+          }
+          return;
+        }
+        if (selectedFrame === frame) {
+          selectedFrame = null;
+          btn.classList.remove('is-selected');
+        } else {
+          selectedFrame = frame;
+          frameGrid.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('is-selected'));
+          btn.classList.add('is-selected');
+        }
+      });
+
+      frameGrid.appendChild(btn);
+    });
+  });
+}
+
 function openDrawer() {
   if (isEditMode) toggleEditMode();
 
@@ -474,7 +578,14 @@ function openDrawer() {
   playerNameInput.value = '';
   currentPack = 'animated';
   selectedEmoji = PACKS[currentPack][0];
+  selectedFrame = null;
   initEmojiGrid();
+  initFrameGrid();
+  
+  document.getElementById('avatar-section').style.display = 'block';
+  document.getElementById('frame-section').style.display = 'none';
+  document.getElementById('toggle-avatar-btn').classList.remove('secondary');
+  document.getElementById('toggle-frame-btn').classList.add('secondary');
 
   drawerOverlay.classList.add('is-visible');
   addPlayerDrawer.classList.add('is-open');
@@ -504,7 +615,14 @@ function openEditDrawer(id) {
   }
   currentPack = foundPack;
   selectedEmoji = player.emoji;
+  selectedFrame = player.active_frame || null;
   initEmojiGrid();
+  initFrameGrid();
+  
+  document.getElementById('avatar-section').style.display = 'block';
+  document.getElementById('frame-section').style.display = 'none';
+  document.getElementById('toggle-avatar-btn').classList.remove('secondary');
+  document.getElementById('toggle-frame-btn').classList.add('secondary');
 
   drawerOverlay.classList.add('is-visible');
   addPlayerDrawer.classList.add('is-open');
@@ -526,9 +644,12 @@ function handleSavePlayer() {
   if (!name) return; // Ignore if empty
 
   if (editingPlayerId) {
-    window.Storage.updatePlayer(editingPlayerId, name, selectedEmoji);
+    window.Storage.updatePlayer(editingPlayerId, name, selectedEmoji, undefined, selectedFrame);
   } else {
-    window.Storage.addPlayer(name, selectedEmoji);
+    const newId = window.Storage.addPlayer(name, selectedEmoji);
+    if (selectedFrame) {
+      window.Storage.updatePlayer(newId, name, selectedEmoji, undefined, selectedFrame);
+    }
   }
 
   closeDrawer();
@@ -560,6 +681,26 @@ function setupEventListeners() {
   drawerCloseBtn.addEventListener('click', closeDrawer);
   drawerOverlay.addEventListener('click', closeDrawer);
   savePlayerBtn.addEventListener('click', handleSavePlayer);
+  
+  const toggleAvatarBtn = document.getElementById('toggle-avatar-btn');
+  const toggleFrameBtn = document.getElementById('toggle-frame-btn');
+  const avatarSection = document.getElementById('avatar-section');
+  const frameSection = document.getElementById('frame-section');
+  
+  if (toggleAvatarBtn && toggleFrameBtn) {
+    toggleAvatarBtn.addEventListener('click', () => {
+      avatarSection.style.display = 'block';
+      frameSection.style.display = 'none';
+      toggleAvatarBtn.classList.remove('secondary');
+      toggleFrameBtn.classList.add('secondary');
+    });
+    toggleFrameBtn.addEventListener('click', () => {
+      avatarSection.style.display = 'none';
+      frameSection.style.display = 'block';
+      toggleAvatarBtn.classList.add('secondary');
+      toggleFrameBtn.classList.remove('secondary');
+    });
+  }
 
   // Settings modal
   const settingsOverlay = document.getElementById('settings-overlay');

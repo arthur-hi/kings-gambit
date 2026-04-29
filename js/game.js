@@ -100,7 +100,7 @@ function renderIntro() {
     const av = document.createElement('div');
     av.className = 'hs-chip-avatar';
     if (p.emoji.endsWith('.png') || p.emoji.endsWith('.gif')) {
-      av.innerHTML = `<img src="${p.emoji}" draggable="false">`;
+      av.innerHTML = window.UI ? window.UI.renderAvatarImg(p.emoji) : `<img src="${p.emoji}" draggable="false">`;
     } else {
       av.textContent = p.emoji;
     }
@@ -112,6 +112,7 @@ function renderIntro() {
     chip.appendChild(name);
     introPlayersEl.appendChild(chip);
   });
+  if (window.UI && window.UI.startAnimatedCanvases) window.UI.startAnimatedCanvases();
 }
 
 // ── Game Start ───────────────────────────────────
@@ -136,6 +137,8 @@ function startGame() {
   resetResultPanel();
   nextBtn.classList.add('hidden');
   spinBtn.disabled = false;
+  
+  if (window.UI && window.UI.startAnimatedCanvases) window.UI.startAnimatedCanvases();
 }
 
 function restartGame() {
@@ -299,6 +302,8 @@ function resolveResult() {
 
   //nextBtn.classList.remove('hidden');
   spinBtn.disabled = false;
+  
+  if (window.UI && window.UI.startAnimatedCanvases) window.UI.startAnimatedCanvases();
 }
 
 // ── After result, prepare for next spin ──────────
@@ -324,10 +329,7 @@ function setWheelCenter(player) {
   wheelCenter.style.boxShadow   = '0 0 20px rgba(250,204,21,0.5)';
 
   if (player.emoji.endsWith('.png') || player.emoji.endsWith('.gif')) {
-    const img = document.createElement('img');
-    img.src = player.emoji;
-    img.draggable = false;
-    wheelCenter.appendChild(img);
+    wheelCenter.innerHTML = window.UI ? window.UI.renderAvatarImg(player.emoji) : `<img src="${player.emoji}" draggable="false">`;
   } else {
     wheelCenter.textContent = player.emoji;
   }
@@ -355,7 +357,7 @@ function renderSurvivorBar() {
     const av = document.createElement('div');
     av.className = 'hs-survivor-avatar';
     if (p.emoji.endsWith('.png') || p.emoji.endsWith('.gif')) {
-      av.innerHTML = `<img src="${p.emoji}" draggable="false">`;
+      av.innerHTML = window.UI ? window.UI.renderAvatarImg(p.emoji) : `<img src="${p.emoji}" draggable="false">`;
     } else {
       av.textContent = p.emoji;
     }
@@ -423,9 +425,7 @@ function showWinner() {
   // Winner avatar
   winnerAvatarEl.innerHTML = '';
   if (winner.emoji.endsWith('.png') || winner.emoji.endsWith('.gif')) {
-    const img = document.createElement('img');
-    img.src = winner.emoji;
-    winnerAvatarEl.appendChild(img);
+    winnerAvatarEl.innerHTML = window.UI ? window.UI.renderAvatarImg(winner.emoji) : `<img src="${winner.emoji}" draggable="false">`;
   } else {
     winnerAvatarEl.textContent = winner.emoji;
   }
@@ -447,7 +447,7 @@ function showWinner() {
     const av = document.createElement('div');
     av.className = 'hs-loser-avatar';
     if (p.emoji.endsWith('.png') || p.emoji.endsWith('.gif')) {
-      av.innerHTML = `<img src="${p.emoji}" draggable="false">`;
+      av.innerHTML = window.UI ? window.UI.renderAvatarImg(p.emoji) : `<img src="${p.emoji}" draggable="false">`;
     } else {
       av.textContent = p.emoji;
     }
@@ -462,6 +462,8 @@ function showWinner() {
 
   launchConfetti();
   if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 300]);
+  
+  if (window.UI && window.UI.startAnimatedCanvases) window.UI.startAnimatedCanvases();
 }
 
 // ── Confetti ──────────────────────────────────────
@@ -496,9 +498,7 @@ function avatarElement(player, cls) {
   const av = document.createElement('div');
   av.className = `hs-result-avatar-large ${cls}`;
   if (player.emoji.endsWith('.png') || player.emoji.endsWith('.gif')) {
-    const img = document.createElement('img');
-    img.src = player.emoji;
-    av.appendChild(img);
+    av.innerHTML = window.UI ? window.UI.renderAvatarImg(player.emoji) : `<img src="${player.emoji}" draggable="false">`;
   } else {
     av.textContent = player.emoji;
   }

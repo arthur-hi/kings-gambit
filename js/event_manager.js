@@ -2,21 +2,28 @@ class EventManager {
   constructor() {
     this.turnsSinceTides = 0;
     this.turnsSincePlank = 0;
+    this.turnsSinceTreasure = 0;
     
     // Tides: max 15%, slope 1.5% per turn
     this.tidesMaxP = 0.15;
     this.tidesSlope = 0.015;
     this.tidesGrace = 4;
 
-    // Plank: max 8%, slope 0.5% per turn
-    this.plankMaxP = 0.08;
+    // Plank: max 10%, slope 0.5% per turn
+    this.plankMaxP = 0.10;
     this.plankSlope = 0.005;
     this.plankGrace = 8;
+    
+    // Treasure: max 5%, slope 0.5% per turn
+    this.treasureMaxP = 0.05;
+    this.treasureSlope = 0.005;
+    this.treasureGrace = 16;
   }
 
   evaluate(player) {
     this.turnsSinceTides++;
     this.turnsSincePlank++;
+    this.turnsSinceTreasure++;
 
     // Use settings from localStorage
     let settings = {};
@@ -31,6 +38,16 @@ class EventManager {
     // Adjust parameters based on settings sliders (if present)
     const tidesFreq = settings.mutinyTidesFreq || 1; // 0.5, 1, 1.5
     const plankFreq = settings.mutinyPlankFreq || 1;
+    
+    // Check Treasure (Treasure is always enabled)
+    let treasureChance = 0;
+    if (this.turnsSinceTreasure > this.treasureGrace) {
+      treasureChance = Math.min(this.treasureMaxP, (this.turnsSinceTreasure - this.treasureGrace) * this.treasureSlope);
+    }
+    if (Math.random() < treasureChance) {
+      this.turnsSinceTreasure = 0;
+      return 'TREASURE';
+    }
 
     // Check Plank
     if (plankEnabled) {
