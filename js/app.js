@@ -108,7 +108,7 @@ document.addEventListener('touchend', handleGlobalUp);
 // --- Initialization ---
 function init() {
   renderRoster();
-  initEmojiGrid();
+  //initEmojiGrid();
   setupEventListeners();
   updateGamesLockState();
 
