@@ -72,6 +72,39 @@ const FRAME_CATEGORIES = [
 const FRAMES = FRAME_CATEGORIES[0].frames;
 let selectedFrame = null;
 
+const BACKGROUND_CATEGORIES = [
+  {
+    id: 'mutiny',
+    label: '☠️ Mutiny',
+    path: 'backgrounds/mutiny',
+    backgrounds: [
+      'crania', 'hiding-pirates', 'pirate-crossing', 'secret-treasures',
+      'smoking-killed', 'smoking-kills', 'treasure-island', 'walking-pirates'
+    ]
+  },
+  {
+    id: 'grand-prix',
+    label: '🏎️ Grand Prix',
+    path: 'backgrounds/grand-prix',
+    backgrounds: ['credits', 'the-car', 'twin-turbo-95', 'vrummmm']
+  },
+  {
+    id: 'ring-of-fire',
+    label: '🔥 Ring of Fire',
+    path: 'backgrounds/ring-of-fire',
+    backgrounds: ['consumerism', 'stock-graph']
+  },
+  {
+    id: 'handshake',
+    label: '🤝 The Handshake',
+    path: 'backgrounds/handshake',
+    backgrounds: ['cockroach-party', 'the-great-unknown']
+  }
+];
+// Flat mutiny-only list (unlockable via treasure event)
+const BACKGROUNDS = BACKGROUND_CATEGORIES[0].backgrounds;
+let selectedBackground = null;
+
 // --- Drag state ---
 let draggedElement = null;
 let dragStartX = 0;
@@ -471,9 +504,13 @@ function initEmojiGrid() {
     .filter(p => p.id !== editingPlayerId) // Allow the player being edited to keep their own
     .map(p => p.emoji);
 
-  PACKS[currentPack].forEach(emoji => {
+  const packEmojis = PACKS[currentPack];
+  const initialEmojis = packEmojis.slice(0, 12);
+  const remainingEmojis = packEmojis.slice(12);
+
+  const renderEmojiBtn = (emoji) => {
     // Skip avatars already chosen by other players
-    if (takenEmojis.includes(emoji)) return;
+    if (takenEmojis.includes(emoji)) return null;
 
     const btn = document.createElement('button');
     btn.className = `emoji-btn ${emoji === selectedEmoji ? 'is-selected' : ''}`;
@@ -487,14 +524,36 @@ function initEmojiGrid() {
     btn.addEventListener('click', () => {
       playerNameInput.blur();
       selectedEmoji = emoji;
-      document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('is-selected'));
+      document.querySelectorAll('#emoji-grid .emoji-btn').forEach(b => b.classList.remove('is-selected'));
       btn.classList.add('is-selected');
     });
-    emojiGrid.appendChild(btn);
+    return btn;
+  };
+
+  initialEmojis.forEach(emoji => {
+    const btn = renderEmojiBtn(emoji);
+    if (btn) emojiGrid.appendChild(btn);
   });
 
-  if (window.UI && window.UI.startAnimatedCanvases) {
-    window.UI.startAnimatedCanvases();
+  if (remainingEmojis.length > 0) {
+    const appendRemaining = () => {
+      remainingEmojis.forEach(emoji => {
+        const btn = renderEmojiBtn(emoji);
+        if (btn) emojiGrid.appendChild(btn);
+      });
+      if (window.UI && window.UI.startAnimatedCanvases) {
+        window.UI.startAnimatedCanvases();
+      }
+    };
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(appendRemaining);
+    } else {
+      setTimeout(appendRemaining, 100);
+    }
+  } else {
+    if (window.UI && window.UI.startAnimatedCanvases) {
+      window.UI.startAnimatedCanvases();
+    }
   }
 }
 
@@ -510,24 +569,31 @@ function initFrameGrid() {
     if (p && p.unlocked_frames) playerUnlockedFrames = p.unlocked_frames;
   }
 
+  const itemsToRender = [];
   FRAME_CATEGORIES.forEach(category => {
-    // Category header
-    const header = document.createElement('p');
-    header.style.cssText = [
-      'font-size: 0.7rem',
-      'font-weight: 800',
-      'letter-spacing: 1.5px',
-      'text-transform: uppercase',
-      'color: var(--color-text-muted)',
-      'margin: 12px 0 6px',
-      'width: 100%',
-      'grid-column: 1 / -1',
-    ].join(';');
-    header.textContent = category.label;
-    frameGrid.appendChild(header);
-
+    itemsToRender.push({ type: 'header', label: category.label });
     category.frames.forEach(frame => {
-      // Only mutiny frames are unlockable right now
+      itemsToRender.push({ type: 'frame', category, frame });
+    });
+  });
+
+  const renderItem = (item) => {
+    if (item.type === 'header') {
+      const header = document.createElement('p');
+      header.style.cssText = [
+        'font-size: 0.7rem',
+        'font-weight: 800',
+        'letter-spacing: 1.5px',
+        'text-transform: uppercase',
+        'color: var(--color-text-muted)',
+        'margin: 12px 0 6px',
+        'width: 100%',
+        'grid-column: 1 / -1',
+      ].join(';');
+      header.textContent = item.label;
+      return header;
+    } else {
+      const { category, frame } = item;
       const isMutinyFrame = category.id === 'mutiny';
       const isUnlocked = isMutinyFrame && playerUnlockedFrames.includes(frame);
 
@@ -536,7 +602,6 @@ function initFrameGrid() {
       btn.style.position = 'relative';
 
       if (!isUnlocked) {
-        btn.style.filter = 'grayscale(1)';
         btn.style.opacity = '0.5';
       }
 
@@ -563,10 +628,152 @@ function initFrameGrid() {
           btn.classList.add('is-selected');
         }
       });
+      return btn;
+    }
+  };
 
-      frameGrid.appendChild(btn);
+  const initialItems = itemsToRender.slice(0, 12);
+  const remainingItems = itemsToRender.slice(12);
+
+  initialItems.forEach(item => frameGrid.appendChild(renderItem(item)));
+
+  if (remainingItems.length > 0) {
+    const appendRemaining = () => {
+      remainingItems.forEach(item => frameGrid.appendChild(renderItem(item)));
+    };
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(appendRemaining);
+    } else {
+      setTimeout(appendRemaining, 100);
+    }
+  }
+}
+
+function initBackgroundGrid() {
+  const bgGrid = document.getElementById('background-grid');
+  if (!bgGrid) return;
+  bgGrid.innerHTML = '';
+
+  const players = window.Storage.getPlayers();
+  let playerUnlockedBgs = [];
+  if (editingPlayerId) {
+    const p = players.find(p => p.id === editingPlayerId);
+    if (p && p.unlocked_backgrounds) playerUnlockedBgs = p.unlocked_backgrounds;
+  }
+
+  const itemsToRender = [];
+  BACKGROUND_CATEGORIES.forEach(category => {
+    itemsToRender.push({ type: 'header', label: category.label });
+    category.backgrounds.forEach(bg => {
+      itemsToRender.push({ type: 'background', category, bg });
     });
   });
+
+  const renderItem = (item) => {
+    if (item.type === 'header') {
+      const header = document.createElement('p');
+      header.style.cssText = [
+        'font-size: 0.7rem',
+        'font-weight: 800',
+        'letter-spacing: 1.5px',
+        'text-transform: uppercase',
+        'color: var(--color-text-muted)',
+        'margin: 12px 0 6px',
+        'width: 100%',
+        'grid-column: 1 / -1',
+      ].join(';');
+      header.textContent = item.label;
+      return header;
+    } else {
+      const { category, bg } = item;
+      const isMutinyBg = category.id === 'mutiny';
+      const isUnlocked = isMutinyBg && playerUnlockedBgs.includes(bg);
+
+      const btn = document.createElement('button');
+      btn.className = `emoji-btn ${bg === selectedBackground ? 'is-selected' : ''}`;
+      btn.style.cssText = 'position:relative; overflow:hidden; padding:0;';
+
+      if (!isUnlocked) {
+        btn.style.opacity = '0.5';
+      }
+
+      // Media preview container
+      const mediaContainer = document.createElement('div');
+      mediaContainer.style.cssText = 'width:100%;height:100%;position:absolute;inset:0;pointer-events:none;';
+      
+      const renderMedia = (isSelected) => {
+        if (isSelected) {
+          mediaContainer.innerHTML = `<video preload="none" muted loop playsinline src="${category.path}/${bg}.webm" style="width:100%;height:100%;object-fit:cover;display:block;"></video>`;
+          const vid = mediaContainer.querySelector('video');
+          vid.play().catch(() => {});
+        } else {
+          mediaContainer.innerHTML = `<img src="${category.path}/${bg}.jpg" style="width:100%;height:100%;object-fit:cover;display:block;">`;
+        }
+      };
+      
+      renderMedia(bg === selectedBackground);
+      btn.appendChild(mediaContainer);
+
+      if (!isUnlocked) {
+        const lock = document.createElement('span');
+        lock.style.cssText = 'position:absolute;bottom:2px;right:3px;font-size:0.65rem;line-height:1;';
+        lock.textContent = '🔒';
+        btn.appendChild(lock);
+      }
+
+      btn.addEventListener('click', () => {
+        playerNameInput.blur();
+        if (!isUnlocked) {
+          if (window.UI && window.UI.showToast) {
+            const msg = isMutinyBg
+              ? "You need to unlock this background in-game first!"
+              : `${category.label.split(' ').slice(1).join(' ')} backgrounds aren't unlockable yet — coming soon!`;
+            window.UI.showToast(msg);
+          }
+          return;
+        }
+        
+        if (selectedBackground === bg) {
+          selectedBackground = null;
+          btn.classList.remove('is-selected');
+          renderMedia(false); // Demote to image
+        } else {
+          selectedBackground = bg;
+          
+          // Deselect others visually
+          bgGrid.querySelectorAll('.emoji-btn').forEach(b => {
+             b.classList.remove('is-selected');
+          });
+          btn.classList.add('is-selected');
+          
+          // Demote all other bg items to image, promote this to video via event
+          document.dispatchEvent(new CustomEvent('backgroundSelected', { detail: bg }));
+        }
+      });
+      
+      document.addEventListener('backgroundSelected', (e) => {
+        renderMedia(bg === e.detail);
+      });
+
+      return btn;
+    }
+  };
+
+  const initialItems = itemsToRender.slice(0, 12);
+  const remainingItems = itemsToRender.slice(12);
+
+  initialItems.forEach(item => bgGrid.appendChild(renderItem(item)));
+
+  if (remainingItems.length > 0) {
+    const appendRemaining = () => {
+      remainingItems.forEach(item => bgGrid.appendChild(renderItem(item)));
+    };
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(appendRemaining);
+    } else {
+      setTimeout(appendRemaining, 100);
+    }
+  }
 }
 
 function openDrawer() {
@@ -579,13 +786,17 @@ function openDrawer() {
   currentPack = 'animated';
   selectedEmoji = PACKS[currentPack][0];
   selectedFrame = null;
+  selectedBackground = null;
   initEmojiGrid();
   initFrameGrid();
+  initBackgroundGrid();
   
   document.getElementById('avatar-section').style.display = 'block';
   document.getElementById('frame-section').style.display = 'none';
+  document.getElementById('background-section').style.display = 'none';
   document.getElementById('toggle-avatar-btn').classList.remove('secondary');
   document.getElementById('toggle-frame-btn').classList.add('secondary');
+  document.getElementById('toggle-background-btn').classList.add('secondary');
 
   drawerOverlay.classList.add('is-visible');
   addPlayerDrawer.classList.add('is-open');
@@ -616,13 +827,17 @@ function openEditDrawer(id) {
   currentPack = foundPack;
   selectedEmoji = player.emoji;
   selectedFrame = player.active_frame || null;
+  selectedBackground = player.active_background || null;
   initEmojiGrid();
   initFrameGrid();
+  initBackgroundGrid();
   
   document.getElementById('avatar-section').style.display = 'block';
   document.getElementById('frame-section').style.display = 'none';
+  document.getElementById('background-section').style.display = 'none';
   document.getElementById('toggle-avatar-btn').classList.remove('secondary');
   document.getElementById('toggle-frame-btn').classList.add('secondary');
+  document.getElementById('toggle-background-btn').classList.add('secondary');
 
   drawerOverlay.classList.add('is-visible');
   addPlayerDrawer.classList.add('is-open');
@@ -637,6 +852,10 @@ function closeDrawer() {
   addPlayerDrawer.classList.remove('is-open');
   playerNameInput.blur(); // dismiss keyboard
   editingPlayerId = null;
+  
+  if (window.UI && window.UI.stopAnimatedCanvases) {
+    window.UI.stopAnimatedCanvases();
+  }
 }
 
 function handleSavePlayer() {
@@ -644,11 +863,11 @@ function handleSavePlayer() {
   if (!name) return; // Ignore if empty
 
   if (editingPlayerId) {
-    window.Storage.updatePlayer(editingPlayerId, name, selectedEmoji, undefined, selectedFrame);
+    window.Storage.updatePlayer(editingPlayerId, name, selectedEmoji, undefined, selectedFrame, selectedBackground);
   } else {
     const newId = window.Storage.addPlayer(name, selectedEmoji);
-    if (selectedFrame) {
-      window.Storage.updatePlayer(newId, name, selectedEmoji, undefined, selectedFrame);
+    if (selectedFrame || selectedBackground) {
+      window.Storage.updatePlayer(newId, name, selectedEmoji, undefined, selectedFrame, selectedBackground);
     }
   }
 
@@ -688,18 +907,37 @@ function setupEventListeners() {
   const frameSection = document.getElementById('frame-section');
   
   if (toggleAvatarBtn && toggleFrameBtn) {
-    toggleAvatarBtn.addEventListener('click', () => {
+    const bgBtn = document.getElementById('toggle-background-btn');
+    const bgSection = document.getElementById('background-section');
+
+    const showAvatar = () => {
       avatarSection.style.display = 'block';
       frameSection.style.display = 'none';
+      if (bgSection) bgSection.style.display = 'none';
       toggleAvatarBtn.classList.remove('secondary');
       toggleFrameBtn.classList.add('secondary');
-    });
-    toggleFrameBtn.addEventListener('click', () => {
+      if (bgBtn) bgBtn.classList.add('secondary');
+    };
+    const showFrame = () => {
       avatarSection.style.display = 'none';
       frameSection.style.display = 'block';
+      if (bgSection) bgSection.style.display = 'none';
       toggleAvatarBtn.classList.add('secondary');
       toggleFrameBtn.classList.remove('secondary');
-    });
+      if (bgBtn) bgBtn.classList.add('secondary');
+    };
+    const showBg = () => {
+      avatarSection.style.display = 'none';
+      frameSection.style.display = 'none';
+      if (bgSection) bgSection.style.display = 'block';
+      toggleAvatarBtn.classList.add('secondary');
+      toggleFrameBtn.classList.add('secondary');
+      if (bgBtn) bgBtn.classList.remove('secondary');
+    };
+
+    toggleAvatarBtn.addEventListener('click', showAvatar);
+    toggleFrameBtn.addEventListener('click', showFrame);
+    if (bgBtn) bgBtn.addEventListener('click', showBg);
   }
 
   // Settings modal

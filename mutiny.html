@@ -649,11 +649,6 @@
       <button id="filter-btn" class="game-nav-filter">⚙</button>
     </nav>
 
-    <div id="curse-banner" class="curse-banner" style="display: none;">
-      <span class="curse-label">ACTIVE CURSE:</span>
-      <span id="curse-text" class="curse-text"></span>
-    </div>
-
     <main class="mutiny-arena">
       <!-- 3D Coin -->
       <div class="mutiny-coin-wrapper">
@@ -738,6 +733,13 @@
     <div id="transition-overlay" class="rule-overlay">
       <div class="transition-card">
 
+        <!-- Background video for Pass the Phone -->
+        <video id="pass-bg-video"
+               muted playsinline loop
+               style="display:none; position:absolute; inset:0; width:100%; height:100%;
+                      object-fit:cover; z-index:0; opacity:0; transition:opacity 0.4s ease; border-radius:inherit;">
+        </video>
+
         <!-- REVERSE PANEL -->
         <div id="reverse-panel" class="reverse-panel" style="display:none;">
           <!-- Animated wind lines SVG -->
@@ -764,6 +766,7 @@
           <div id="pass-avatar" class="pass-avatar"></div>
           <p id="pass-name" class="pass-name">Player</p>
           <p class="pass-hint">⚓ Their turn next!</p>
+          <div id="curse-reminders" class="curse-reminders"></div>
         </div>
 
       </div>
@@ -817,6 +820,7 @@
       <button class="settings-tab active" data-target="tab-rules">Rules</button>
       <button class="settings-tab" data-target="tab-packs">Packs</button>
       <button class="settings-tab" data-target="tab-secret">Crew</button>
+      <button class="settings-tab" data-target="tab-audio">Audio</button>
     </div>
 
     <div class="settings-content">
@@ -849,16 +853,51 @@
         <div class="secret-info" style="font-size:0.8rem; color:#64748b; margin-bottom:12px;">Toggle the anchor icon to increase a player's chance to Walk the Plank!</div>
         <div id="secret-player-list" class="secret-list"></div>
       </div>
+
+      <!-- Secret Tab -->
+      <div id="tab-audio" class="settings-pane">
+        <!-- audio toggles here for ambience, coin sounds, card sounds and event sounds  -->
+        <div class="settings-group">
+          <h3>Audio</h3>
+          <label class="setting-toggle">
+            <input type="checkbox" id="setting-ambience" checked>
+            <span class="toggle-text">Ambience</span>
+          </label>
+          <label class="setting-toggle">
+            <input type="checkbox" id="setting-coin-sounds" checked>
+            <span class="toggle-text">Coin Sounds</span>
+          </label>
+          <label class="setting-toggle">
+            <input type="checkbox" id="setting-card-sounds" checked>
+            <span class="toggle-text">Card Sounds</span>
+          </label>
+          <label class="setting-toggle">
+            <input type="checkbox" id="setting-event-sounds" checked>
+            <span class="toggle-text">Event Sounds</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expiry Modal -->
+  <div id="expiry-overlay" class="rule-overlay">
+    <div class="rule-card">
+      <h2 class="rule-title" style="color: #ef4444;">CURSE LIFTED</h2>
+      <p id="expiry-text" class="rule-text"></p>
+      <button class="btn-3d mt-4" style="width: 100%;" onclick="document.getElementById('expiry-overlay').classList.remove('is-visible'); _runTransitionAfterExpiry();">Understood</button>
     </div>
   </div>
 
   <script src="js/storage.js?v=1.3"></script>
   <script src="js/gif_renderer.js"></script>
   <script src="js/event_manager.js"></script>
+  <script src="js/audio_manager.js"></script>
   <script src="mutiny/cards/exp1.js?v=1.3"></script>
   <script src="mutiny/cards/fuckyou.js?v=1.3"></script>
   <script src="mutiny/cards/cbtm.js?v=1.3"></script>
   <script src="mutiny/cards/curses.js?v=1.3"></script>
+  <script src="mutiny/cards/voyage.js?v=1.0"></script>
   <script src="mutiny/cards/base.js?v=1.3"></script>
   <script src="js/mutiny.js?v=1.3"></script>
 </body>

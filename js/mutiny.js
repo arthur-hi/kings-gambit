@@ -47,8 +47,19 @@ function getCustomCardsArray() {
 let activePlayers = [];
 let currentPlayerIndex = 0;
 let isSpinning = false;
+let isGameOver = false;
+let activeCurses = [];
 let deck = [];
-let activeCurse = null;
+
+// ── Reward lists (mutiny-only, unlockable via treasure event) ──────────────
+const MUTINY_FRAMES = [
+  'bones', 'gold-coins-and-dark-marks', 'sea-waves', 'skeletons-and-bones',
+  'skulls', 'smoking-pipes', 'steering-wheel', 'tentacles', 'under-the-sea'
+];
+const MUTINY_BACKGROUNDS = [
+  'crania', 'hiding-pirates', 'pirate-crossing', 'secret-treasures',
+  'smoking-killed', 'smoking-kills', 'treasure-island', 'walking-pirates'
+];
 
 // ── Directional state ──────────────────────────
 // 1 = clockwise (default), -1 = counter-clockwise
@@ -83,7 +94,6 @@ let selectedTags = getSelectedTags();
 let container, coin, promptDisplay, turnEmoji, turnName;
 let mutinyOverlay, mutinyTitle, mutinyText, mutinyContinueBtn;
 let backBtn, exitOverlay, exitStayBtn, exitQuitBtn;
-let curseBanner, curseText;
 let filterBtn, filterOverlay, filterDrawer, filterCloseBtn, filterList;
 let cbtmTimer, cbtmStartBtn, cbtmVoteActions, cbtmWinBtn, cbtmLoseBtn, cbtmExplainBtn, cbtmExplanation, cbtmDoneBtn;
 let cbtmInterval = null;
@@ -424,6 +434,9 @@ cardBuilderOverlay.addEventListener('click', (e) => {
 
 // SET SAIL button
 setSailBtn.addEventListener('click', () => {
+  // Unlock audio context on first meaningful user tap
+  if (window.audioManager) window.audioManager.unlock();
+
   crewManifest.classList.add('is-leaving');
   setTimeout(() => {
     crewManifest.style.display = 'none';
@@ -508,9 +521,6 @@ function startGame() {
   exitStayBtn = document.getElementById('exit-stay-btn');
   exitQuitBtn = document.getElementById('exit-quit-btn');
 
-  curseBanner = document.getElementById('curse-banner');
-  curseText = document.getElementById('curse-text');
-
   filterBtn = document.getElementById('filter-btn');
   filterOverlay = document.getElementById('filter-overlay');
   filterDrawer = document.getElementById('filter-drawer');
@@ -553,12 +563,18 @@ function startGame() {
   updateTurnUI();
   if (window.UI && window.UI.startAnimatedCanvases) window.UI.startAnimatedCanvases();
 
+  // Start looping ambience
+  if (window.audioManager) window.audioManager.startAmbience('mutiny');
+
   coin.addEventListener('click', handleSpin);
   mutinyContinueBtn.addEventListener('click', handleContinue);
 
   backBtn.addEventListener('click', () => exitOverlay.classList.add('is-visible'));
   exitStayBtn.addEventListener('click', () => exitOverlay.classList.remove('is-visible'));
-  exitQuitBtn.addEventListener('click', () => window.location.href = 'index.html');
+  exitQuitBtn.addEventListener('click', () => {
+    if (window.audioManager) window.audioManager.stopAmbience();
+    window.location.href = 'index.html';
+  });
 
   filterBtn.addEventListener('click', openSettingsDrawer);
   filterCloseBtn.addEventListener('click', closeSettingsDrawer);
@@ -783,7 +799,24 @@ function handleSpin() {
   if (eventType === 'PLANK') {
     coin.classList.add('is-plank');
   } else if (eventType === 'TREASURE') {
-    coin.classList.add('is-treasure');
+    // Pre-roll completion check: if the player owns ALL mutiny frames AND backgrounds,
+    // silently fall through to a standard card without consuming treasure odds.
+    const ownedFrames = p.unlocked_frames || [];
+    const ownedBgs    = p.unlocked_backgrounds || [];
+    const hasAllFrames = MUTINY_FRAMES.every(f => ownedFrames.includes(f));
+    const hasAllBgs    = MUTINY_BACKGROUNDS.every(b => ownedBgs.includes(b));
+    if (hasAllFrames && hasAllBgs) {
+      eventType = null; // fall through to standard card, don't reset odds
+    } else {
+      coin.classList.add('is-treasure');
+    }
+  }
+
+  if (eventType != null) {
+    if (window.audioManager) window.audioManager.play('mutiny', 'coin_event');
+  }
+  else {
+    if (window.audioManager) window.audioManager.play('mutiny', 'coin_spin');
   }
 
   coin.classList.add('spin-fast');
@@ -809,6 +842,7 @@ function handleSpin() {
     } else if (eventType === 'TIDES') {
       triggerTidesEvent();
     } else {
+      if (window.audioManager) window.audioManager.play('mutiny', 'card');
       drawStandardCard();
     }
   }, 1400);
@@ -821,6 +855,7 @@ function triggerPlankEvent(p) {
   const passPanel    = document.getElementById('pass-panel');
 
   if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+  if (window.audioManager) window.audioManager.play('mutiny', 'plank');
 
   if (passPanel) passPanel.style.display = 'none';
 
@@ -841,13 +876,10 @@ function triggerPlankEvent(p) {
 }
 
 function triggerTreasureEvent(p) {
-  const FRAMES = [
-    'bones', 'gold-coins-and-dark-marks', 'sea-waves', 'skeletons-and-bones',
-    'skulls', 'smoking-pipes', 'steering-wheel', 'tentacles', 'under-the-sea'
-  ];
-
-  const unlocked = p.unlocked_frames || [];
-  const locked = FRAMES.filter(f => !unlocked.includes(f));
+  const unlocked_frames = p.unlocked_frames || [];
+  const unlocked_bgs    = p.unlocked_backgrounds || [];
+  const lockedFrames    = MUTINY_FRAMES.filter(f => !unlocked_frames.includes(f));
+  const lockedBgs       = MUTINY_BACKGROUNDS.filter(b => !unlocked_bgs.includes(b));
 
   const overlay    = document.getElementById('treasure-overlay');
   const track      = document.getElementById('treasure-track');
@@ -859,72 +891,120 @@ function triggerTreasureEvent(p) {
 
   // Reset state
   overlay.classList.add('is-visible');
+  if (window.audioManager) window.audioManager.play('mutiny', 'treasure');
   track.innerHTML = '';
   track.style.transition = 'none';
   track.style.transform = 'translateX(0)';
   result.style.display = 'none';
   actions.style.display = 'none';
-  if (subtitle) subtitle.textContent = 'Opening Avatar Frame...';
 
   // Restart background GIF
   if (bgGif) { const s = bgGif.src; bgGif.src = ''; bgGif.src = s; }
 
-  // Pick winner
-  let winningFrame, isDuplicate = false;
-  if (locked.length === 0) {
+  // ── Determine reward type and winning item ──────────────────────────────
+  let rewardType; // 'frame' | 'background'
+  let isDuplicate = false;
+  let winningKey;
+
+  const canWinFrame = lockedFrames.length > 0;
+  const canWinBg    = lockedBgs.length > 0;
+
+  if (!canWinFrame && !canWinBg) {
+    // Fully collected — duplicate fallback
     isDuplicate = true;
-    winningFrame = FRAMES[Math.floor(Math.random() * FRAMES.length)];
+    rewardType  = Math.random() < 0.5 ? 'frame' : 'background';
+    winningKey  = rewardType === 'frame'
+      ? MUTINY_FRAMES[Math.floor(Math.random() * MUTINY_FRAMES.length)]
+      : MUTINY_BACKGROUNDS[Math.floor(Math.random() * MUTINY_BACKGROUNDS.length)];
+  } else if (canWinFrame && canWinBg) {
+    // 50/50 split
+    rewardType = Math.random() < 0.5 ? 'frame' : 'background';
+    winningKey = rewardType === 'frame'
+      ? lockedFrames[Math.floor(Math.random() * lockedFrames.length)]
+      : lockedBgs[Math.floor(Math.random() * lockedBgs.length)];
+  } else if (canWinFrame) {
+    rewardType = 'frame';
+    winningKey = lockedFrames[Math.floor(Math.random() * lockedFrames.length)];
   } else {
-    winningFrame = locked[Math.floor(Math.random() * locked.length)];
+    rewardType = 'background';
+    winningKey = lockedBgs[Math.floor(Math.random() * lockedBgs.length)];
   }
 
-  // Build reel items
-  const TOTAL_ITEMS  = 50;
-  const WINNING_IDX  = 43;
-  const ITEM_WIDTH   = 88; // px
-  const GAP          = 8;  // px, matches CSS gap
-  const STRIDE       = ITEM_WIDTH + GAP;
+  // Update subtitle
+  if (subtitle) subtitle.textContent = rewardType === 'frame' ? 'Opening Avatar Frame...' : 'Opening Background...';
+
+  // Helper: create a reel media element for a given key + type
+  function makeReelMedia(key, type) {
+    if (type === 'background') {
+      const vid = document.createElement('video');
+      vid.muted = true;
+      vid.loop = true;
+      vid.setAttribute('playsinline', '');
+      vid.src = `backgrounds/mutiny/${key}.webm`;
+      vid.play().catch(() => {});
+      return vid;
+    } else {
+      const img = document.createElement('img');
+      img.src = `frames/mutiny/${key}.png`;
+      img.draggable = false;
+      return img;
+    }
+  }
+
+  // ── Build reel ──────────────────────────────────────────────────────────
+  const TOTAL_ITEMS = 50;
+  const WINNING_IDX = 43;
+  const ITEM_WIDTH  = 88;
+  const GAP         = 8;
+  const STRIDE      = ITEM_WIDTH + GAP;
+
+  // Pool of filler items: mix of frames + backgrounds for visual diversity
+  const fillerPool = [
+    ...MUTINY_FRAMES.map(k => ({ key: k, type: 'frame' })),
+    ...MUTINY_BACKGROUNDS.map(k => ({ key: k, type: 'background' }))
+  ];
 
   const trackItems = [];
   for (let i = 0; i < TOTAL_ITEMS; i++) {
-    const frame = (i === WINNING_IDX) ? winningFrame : FRAMES[Math.floor(Math.random() * FRAMES.length)];
+    let key, type;
+    if (i === WINNING_IDX) {
+      key  = winningKey;
+      type = rewardType;
+    } else {
+      const filler = fillerPool[Math.floor(Math.random() * fillerPool.length)];
+      key  = filler.key;
+      type = filler.type;
+    }
     const el = document.createElement('div');
     el.className = 'treasure-reel-item';
-    el.innerHTML = `<img src="frames/mutiny/${frame}.png" draggable="false">`;
-    trackItems.push({ el, frame, isWinner: i === WINNING_IDX });
+    el.appendChild(makeReelMedia(key, type));
+    trackItems.push({ el, key, type, isWinner: i === WINNING_IDX });
     track.appendChild(el);
   }
 
-  // Animate — wait one frame so the DOM is painted and we can measure
+  // ── Animate ─────────────────────────────────────────────────────────────
   requestAnimationFrame(() => {
     const containerWidth = track.parentElement.clientWidth || 340;
     const CENTER = containerWidth / 2;
-
-    // We want item WINNING_IDX centred. Item i's centre is at:
-    //   8 (padding-left) + i*STRIDE + ITEM_WIDTH/2
-    // We want that to equal CENTER after translateX:
-    //   translateX = CENTER - (8 + WINNING_IDX*STRIDE + ITEM_WIDTH/2)
     const winnerCenter = 8 + WINNING_IDX * STRIDE + ITEM_WIDTH / 2;
-    const finalX = CENTER - winnerCenter + (Math.random() * 30 - 15); // small random overshoot
-
-    // Start with item 0 centred so the reel visibly scrolls
+    const finalX = CENTER - winnerCenter + (Math.random() * 30 - 15);
     const initialX = CENTER - (8 + ITEM_WIDTH / 2);
     track.style.transform = `translateX(${initialX}px)`;
 
-    // Kick off animation after a tiny delay so the browser registers the start position
     setTimeout(() => {
       track.style.transition = 'transform 4s cubic-bezier(0.05, 0.85, 0.1, 1)';
       track.style.transform = `translateX(${finalX}px)`;
 
-      // Show result after scroll lands
       setTimeout(() => {
         trackItems[WINNING_IDX].el.classList.add('is-winner');
+        const prettyName = winningKey.replace(/-/g, ' ');
+        const typeLabel  = rewardType === 'frame' ? 'frame' : 'background';
         winnerName.textContent = isDuplicate
-          ? `${winningFrame.replace(/-/g, ' ')} (duplicate — take 2 sips! 🍺)`
-          : `${winningFrame.replace(/-/g, ' ')} frame`;
+          ? `${prettyName} (duplicate — take 2 sips! 🍺)`
+          : `${prettyName} ${typeLabel}`;
         result.style.display = 'block';
         actions.style.display = 'flex';
-        if (subtitle) subtitle.textContent = isDuplicate ? 'Already owned...' : 'New frame unlocked!';
+        if (subtitle) subtitle.textContent = isDuplicate ? 'Already owned...' : `New ${typeLabel} unlocked!`;
       }, 4300);
     }, 60);
   });
@@ -936,20 +1016,34 @@ function triggerTreasureEvent(p) {
 
   document.getElementById('treasure-equip-now-btn').onclick = () => {
     if (!isDuplicate) {
-      window.Storage.unlockFrame(p.id, winningFrame);
-      window.Storage.updatePlayer(p.id, p.name, p.emoji, undefined, winningFrame);
-      p.active_frame = winningFrame;
-      if (!p.unlocked_frames) p.unlocked_frames = [];
-      if (!p.unlocked_frames.includes(winningFrame)) p.unlocked_frames.push(winningFrame);
+      if (rewardType === 'frame') {
+        window.Storage.unlockFrame(p.id, winningKey);
+        window.Storage.updatePlayer(p.id, p.name, p.emoji, undefined, winningKey, undefined);
+        p.active_frame = winningKey;
+        if (!p.unlocked_frames) p.unlocked_frames = [];
+        if (!p.unlocked_frames.includes(winningKey)) p.unlocked_frames.push(winningKey);
+      } else {
+        window.Storage.unlockBackground(p.id, winningKey);
+        window.Storage.updatePlayer(p.id, p.name, p.emoji, undefined, undefined, winningKey);
+        p.active_background = winningKey;
+        if (!p.unlocked_backgrounds) p.unlocked_backgrounds = [];
+        if (!p.unlocked_backgrounds.includes(winningKey)) p.unlocked_backgrounds.push(winningKey);
+      }
     }
     closeTreasure();
   };
 
   document.getElementById('treasure-equip-later-btn').onclick = () => {
     if (!isDuplicate) {
-      window.Storage.unlockFrame(p.id, winningFrame);
-      if (!p.unlocked_frames) p.unlocked_frames = [];
-      if (!p.unlocked_frames.includes(winningFrame)) p.unlocked_frames.push(winningFrame);
+      if (rewardType === 'frame') {
+        window.Storage.unlockFrame(p.id, winningKey);
+        if (!p.unlocked_frames) p.unlocked_frames = [];
+        if (!p.unlocked_frames.includes(winningKey)) p.unlocked_frames.push(winningKey);
+      } else {
+        window.Storage.unlockBackground(p.id, winningKey);
+        if (!p.unlocked_backgrounds) p.unlocked_backgrounds = [];
+        if (!p.unlocked_backgrounds.includes(winningKey)) p.unlocked_backgrounds.push(winningKey);
+      }
     }
     closeTreasure();
   };
@@ -965,6 +1059,7 @@ function triggerTidesEvent() {
   if (passPanel) passPanel.style.display = 'none';
 
   gameDirection *= -1;
+  if (window.audioManager) window.audioManager.play('mutiny', 'wind');
   if (navigator.vibrate) navigator.vibrate([100, 80, 100]); 
   const dirWord = gameDirection === 1 ? 'CLOCKWISE ↻' : 'COUNTER-CLOCKWISE ↺';
   if (reverseDirEl) reverseDirEl.textContent = `Direction is now ${dirWord}`;
@@ -1075,9 +1170,19 @@ function drawStandardCard() {
     triggerFlashIfGroup(finalPrompt);
 
     if (cardObj.tags.includes('persistent')) {
-      activeCurse = finalPrompt;
-      curseText.textContent = finalPrompt;
-      curseBanner.style.display = 'block';
+      addCurse('legacy_' + Date.now(), 'legacy', 999, finalPrompt, '');
+    } else if (cardObj.tags.includes('voyage_chalice')) {
+      const multiplier = cardObj.multiplier !== undefined ? cardObj.multiplier : 1.5;
+      const minTurns = cardObj.minTurns !== undefined ? cardObj.minTurns : 3;
+      
+      let baseDuration = Math.max(minTurns, Math.floor(activePlayers.length * multiplier));
+      // Add random variance between -1 and +2 turns to keep it unpredictable
+      const variance = Math.floor(Math.random() * 4) - 1; 
+      const duration = Math.max(2, baseDuration + variance);
+      
+      const reminder = "Pour a splash into the chalice!";
+      const expiry = `${p.name}, the chalice is full. Drink it all!`;
+      addCurse('communal_chalice_' + Date.now(), 'voyage', duration, reminder, expiry);
     }
 }
 
@@ -1100,6 +1205,7 @@ function _closeMutinyCard() {
 }
 
 function handleContinue() {
+  if (window.audioManager) window.audioManager.play('mutiny', 'pass');
   _closeMutinyCard();
   _runTransition();
 }
@@ -1108,7 +1214,51 @@ function handleContinue() {
 // TRANSITION SYSTEM — Reverse & Pass the Phone
 // ──────────────────────────────────────────────
 
+function addCurse(id, type, duration, passReminder, expiryMessage) {
+  // If it's a legacy curse, clear other legacy curses
+  if (type === 'legacy') {
+    activeCurses = activeCurses.filter(c => c.type !== 'legacy');
+  }
+  
+  activeCurses.push({
+    id,
+    type,
+    turnsLeft: duration,
+    passReminder,
+    expiryMessage
+  });
+}
+
+function processCurses() {
+  const expiredMessages = [];
+  activeCurses.forEach(curse => {
+    curse.turnsLeft -= 1;
+    if (curse.turnsLeft <= 0 && curse.expiryMessage) {
+      expiredMessages.push(curse.expiryMessage);
+    }
+  });
+  
+  activeCurses = activeCurses.filter(curse => curse.turnsLeft > 0);
+  return expiredMessages;
+}
+
 function _runTransition() {
+  const expiredMessages = processCurses();
+  if (expiredMessages.length > 0) {
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+    const expiryOverlay = document.getElementById('expiry-overlay');
+    const expiryText = document.getElementById('expiry-text');
+    if (expiryOverlay && expiryText) {
+      expiryText.innerHTML = expiredMessages.join('<br><br>');
+      expiryOverlay.classList.add('is-visible');
+      // Wait for user to click Understood, which calls _runTransitionAfterExpiry()
+      return;
+    }
+  }
+  _runTransitionAfterExpiry();
+}
+
+window._runTransitionAfterExpiry = function() {
   const transOverlay  = document.getElementById('transition-overlay');
   const passPanel     = document.getElementById('pass-panel');
   const passAvatarEl  = document.getElementById('pass-avatar');
@@ -1149,6 +1299,32 @@ function _showPassPanel(passPanel, passAvatarEl, passNameEl, transOverlay) {
     }
   }
 
+  // ── Background video ────────────────────────────────────────────────────
+  const passBgVideo = document.getElementById('pass-bg-video');
+  if (passBgVideo) {
+    if (next.active_background) {
+      passBgVideo.src = `backgrounds/mutiny/${next.active_background}.webm`;
+      passBgVideo.style.display = 'block';
+      passBgVideo.style.opacity = '.25';
+      passBgVideo.play().catch(() => {});
+    } else {
+      passBgVideo.style.opacity = '0';
+      passBgVideo.style.display = 'none';
+      passBgVideo.removeAttribute('src');
+    }
+  }
+
+  const remindersContainer = document.getElementById('curse-reminders');
+  if (remindersContainer) {
+    remindersContainer.innerHTML = '';
+    activeCurses.forEach(curse => {
+      const p = document.createElement('p');
+      p.className = 'curse-reminder-item';
+      p.textContent = curse.passReminder;
+      remindersContainer.appendChild(p);
+    });
+  }
+
   if (passPanel) passPanel.style.display = 'flex';
 
   // Force the pop animation to restart each time
@@ -1172,6 +1348,14 @@ function _showPassPanel(passPanel, passAvatarEl, passNameEl, transOverlay) {
   // Auto-dismiss after 2.5 s, then advance turn
   setTimeout(() => {
     if (transOverlay) transOverlay.classList.remove('is-visible');
+    // Clean up video
+    if (passBgVideo) {
+      passBgVideo.style.opacity = '0';
+      passBgVideo.style.display = 'none';
+      passBgVideo.pause();
+      passBgVideo.src = "";
+      passBgVideo.load();
+    }
     currentPlayerIndex = nextIdx;
     updateTurnUI();
     isSpinning = false;

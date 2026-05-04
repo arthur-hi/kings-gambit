@@ -31,7 +31,9 @@ function addPlayer(name, emoji) {
     isActive: true,
     is_planked: false,
     unlocked_frames: [],
-    active_frame: null
+    active_frame: null,
+    unlocked_backgrounds: [],
+    active_background: null
   });
   savePlayers(players);
   return id;
@@ -51,7 +53,7 @@ function deletePlayer(id) {
   savePlayers(players);
 }
 
-function updatePlayer(id, name, emoji, is_planked = undefined, active_frame = undefined) {
+function updatePlayer(id, name, emoji, is_planked = undefined, active_frame = undefined, active_background = undefined) {
   const players = getPlayers();
   const index = players.findIndex(p => p.id === id);
   if (index !== -1) {
@@ -59,6 +61,7 @@ function updatePlayer(id, name, emoji, is_planked = undefined, active_frame = un
     players[index].emoji = emoji;
     if (is_planked !== undefined) players[index].is_planked = is_planked;
     if (active_frame !== undefined) players[index].active_frame = active_frame;
+    if (active_background !== undefined) players[index].active_background = active_background;
     savePlayers(players);
   }
 }
@@ -70,6 +73,18 @@ function unlockFrame(id, frameId) {
     if (!players[index].unlocked_frames) players[index].unlocked_frames = [];
     if (!players[index].unlocked_frames.includes(frameId)) {
       players[index].unlocked_frames.push(frameId);
+      savePlayers(players);
+    }
+  }
+}
+
+function unlockBackground(id, bgKey) {
+  const players = getPlayers();
+  const index = players.findIndex(p => p.id === id);
+  if (index !== -1) {
+    if (!players[index].unlocked_backgrounds) players[index].unlocked_backgrounds = [];
+    if (!players[index].unlocked_backgrounds.includes(bgKey)) {
+      players[index].unlocked_backgrounds.push(bgKey);
       savePlayers(players);
     }
   }
@@ -132,6 +147,7 @@ window.Storage = {
   deletePlayer,
   updatePlayer,
   unlockFrame,
+  unlockBackground,
   getActivePlayers,
   getGPStats,
   recordGPMatch,
@@ -171,18 +187,14 @@ function renderAvatarImg(playerOrSrc, forceAnimate = false) {
   const mode = forceAnimate ? 'animated' : getAvatarMode();
   let innerHtml = '';
   
-  if (mode === 'static' && src.endsWith('.gif')) {
-    innerHtml = `<canvas class="avatar-image avatar-static-canvas" data-gif-src="${src}" width="80" height="80"></canvas>`;
-  } else if (mode === 'once' && src.endsWith('.gif')) {
+  if (mode === 'once' && src.endsWith('.gif')) {
     innerHtml = `<canvas class="avatar-image avatar-animated-canvas" data-gif-src="${src}" data-gif-mode="once" width="80" height="80"></canvas>`;
-  } else if (mode === 'animated' && src.endsWith('.gif')) {
-    innerHtml = `<canvas class="avatar-image avatar-animated-canvas" data-gif-src="${src}" data-gif-mode="loop" width="80" height="80"></canvas>`;
   } else {
     innerHtml = `<img src="${src}" class="avatar-image" draggable="false">`;
   }
 
   if (activeFrame) {
-    return `<div style="position: relative; width: 100%; height: 100%; overflow: visible;">
+    return `<div style="position: relative; width: 100%; height: 100%; overflow: visible; pointer-events: none;">
       <div id="mutiny-card-avatar" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; border-radius: inherit;">${innerHtml}</div>
       <img src="frames/mutiny/${activeFrame}.png" style="position: absolute; top: -12.5%; left: -12.5%; width: 125%; height: 125%; z-index: 10; object-fit: cover; pointer-events: none; image-rendering: pixelated;" draggable="false">
     </div>`;
@@ -198,6 +210,15 @@ function startAnimatedCanvases() {
       const mode = canvas.dataset.gifMode || 'loop';
       window.GifEngine.render(canvas, src, mode);
       canvas.dataset.animating = '1';
+    });
+  }
+}
+
+function stopAnimatedCanvases() {
+  if (window.GifEngine) {
+    document.querySelectorAll('.avatar-animated-canvas').forEach(canvas => {
+      window.GifEngine.stop(canvas);
+      delete canvas.dataset.animating;
     });
   }
 }
@@ -250,7 +271,7 @@ function showToast(message, duration = 3000) {
   }, duration);
 }
 
-window.UI = { showToast, getAvatarMode, renderAvatarImg, snapshotStaticCanvases, startAnimatedCanvases };
+window.UI = { showToast, getAvatarMode, renderAvatarImg, snapshotStaticCanvases, startAnimatedCanvases, stopAnimatedCanvases };
 
 window.frame = {
   unlock: (frameId) => {

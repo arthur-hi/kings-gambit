@@ -91,5 +91,6 @@ window.MutinyPacks.push({
     { text: "Whistle: {player}, anyone who can't whistle drinks.", tags: ['callout'] },
     { text: "Ocean animals: {player}, start naming creatures that live in the ocean {direction}. first to fail or repeat drinks.", tags: ['social', 'memory'] },
     { text: "The bow: {player}, you must bow to the group every time you are told to drink for the next round. fail = drink extra.", tags: ['physical'] },
+    { text: "Drinks of shame: {player}, bodycount = the number of drinks you take.", tags: ['callout'] },
   ]
 });

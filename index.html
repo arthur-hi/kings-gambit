@@ -91,8 +91,9 @@
       <div class="emoji-selector">
         <br>
         <div class="drawer-toggles mb-2" style="display: flex; gap: 8px;">
-          <button id="toggle-avatar-btn" class="btn-3d" style="flex: 1; padding: 8px;">Choose Avatar</button>
-          <button id="toggle-frame-btn" class="btn-3d secondary" style="flex: 1; padding: 8px;">Choose Frame</button>
+          <button id="toggle-avatar-btn" class="btn-3d" style="flex: 1; padding: 8px; font-size: 0.8rem;">Avatars</button>
+          <button id="toggle-frame-btn" class="btn-3d secondary" style="flex: 1; padding: 8px; font-size: 0.8rem;">Frames</button>
+          <button id="toggle-background-btn" class="btn-3d secondary" style="flex: 1; padding: 8px; font-size: 0.8rem;">Backgrounds</button>
         </div>
         <br>
         <div id="avatar-section">
@@ -104,6 +105,12 @@
 
         <div id="frame-section" style="display: none;">
           <div id="frame-grid" class="emoji-grid mt-2">
+            <!-- Populated via js -->
+          </div>
+        </div>
+
+        <div id="background-section" style="display: none;">
+          <div id="background-grid" class="emoji-grid mt-2">
             <!-- Populated via js -->
           </div>
         </div>
