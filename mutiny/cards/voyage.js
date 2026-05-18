@@ -10,6 +10,12 @@ window.MutinyPacks.push({
       tags: ['voyage_chalice'],
       multiplier: 2,
       minTurns: 5
+    },
+    { 
+      text: "THE COMMUNAL CHALICE: Everyone adds a splash of their drink to a center glass. The curse ends when the timer runs out.", 
+      tags: ['voyage_chalice'],
+      multiplier: 2,
+      minTurns: 5
     }
   ]
 });

@@ -712,6 +712,22 @@
           <button id="cbtm-win-btn" class="btn-3d" style="background-color: #22c55e;">IT'S THE MOVE</button>
           <button id="cbtm-lose-btn" class="btn-3d" style="background-color: #ef4444;">NOT THE MOVE</button>
         </div>
+
+        <div id="gamble-ui" style="display: none; flex-direction: column; align-items: center; width: 100%;">
+          <p class="cbtm-explanation-text" style="display: block; margin-bottom:12px;">
+            Guess higher or lower. If right, everyone drinks 1! If wrong, you drink for every correct guess you made!
+          </p>
+          <div id="gamble-current-num" style="font-size: 5rem; font-weight: 900; color: #451a03; margin: 12px 0; background: #fde68a; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 4px solid #92400e;">5</div>
+          <p style="font-size: 1rem; color: #92400e; margin-bottom: 16px; font-weight:bold;">Correct Guesses: <span id="gamble-bank">0</span></p>
+          
+          <div id="gamble-actions" style="display: flex; justify-content:center; gap:16px; margin-bottom: 16px;">
+            <button id="gamble-higher-btn" class="btn-3d" style="background:#22c55e; padding: 12px 24px;">HIGHER</button>
+            <button id="gamble-lower-btn" class="btn-3d" style="background:#ef4444; padding: 12px 24px;">LOWER</button>
+          </div>
+          <button id="gamble-cashout-btn" class="btn-3d" style="background:#f59e0b; margin-bottom:16px;">CASH OUT</button>
+          <p id="gamble-result-text" style="font-size: 1.2rem; font-weight: 900; color: #ef4444; display: none; margin-bottom: 16px; text-transform: uppercase; text-align: center;"></p>
+        </div>
+
         <button id="mutiny-continue-btn" class="btn-3d mutiny-continue-btn mt-4">AYE AYE, CAPTAIN</button>
       </div>
     </div>
@@ -735,7 +751,7 @@
 
         <!-- Background video for Pass the Phone -->
         <video id="pass-bg-video"
-               muted playsinline loop
+               muted playsinline loop preload="auto"
                style="display:none; position:absolute; inset:0; width:100%; height:100%;
                       object-fit:cover; z-index:0; opacity:0; transition:opacity 0.4s ease; border-radius:inherit;">
         </video>
@@ -893,13 +909,14 @@
   <script src="js/gif_renderer.js"></script>
   <script src="js/event_manager.js"></script>
   <script src="js/audio_manager.js"></script>
+  <script src="mutiny/cards/exp2.js?v=1.3"></script>
   <script src="mutiny/cards/exp1.js?v=1.3"></script>
+  <script src="mutiny/cards/voyage.js?v=1.3"></script>
   <script src="mutiny/cards/fuckyou.js?v=1.3"></script>
   <script src="mutiny/cards/cbtm.js?v=1.3"></script>
+  <script src="mutiny/cards/gamble.js?v=1.3"></script>
   <script src="mutiny/cards/curses.js?v=1.3"></script>
-  <script src="mutiny/cards/voyage.js?v=1.0"></script>
   <script src="mutiny/cards/base.js?v=1.3"></script>
   <script src="js/mutiny.js?v=1.3"></script>
 </body>
-
 </html>

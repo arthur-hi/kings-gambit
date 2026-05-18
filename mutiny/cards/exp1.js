@@ -90,7 +90,7 @@ window.MutinyPacks.push({
     { text: "Pinky out: {player}, for the next round you must drink with your pinky extended. fail = drink.", tags: ['physical'] },
     { text: "Whistle: {player}, anyone who can't whistle drinks.", tags: ['callout'] },
     { text: "Ocean animals: {player}, start naming creatures that live in the ocean {direction}. first to fail or repeat drinks.", tags: ['social', 'memory'] },
-    { text: "The bow: {player}, you must bow to the group every time you are told to drink for the next round. fail = drink extra.", tags: ['physical'] },
-    { text: "Drinks of shame: {player}, bodycount = the number of drinks you take.", tags: ['callout'] },
+    { text: "The bow: {player} must bow to the group every time before they drink until their next go. fail = drink extra.", tags: ['physical'] },
+    { text: "Bottles: If anyone is drinking from a bottle they must drink.", tags: ['callout'] },
   ]
 });

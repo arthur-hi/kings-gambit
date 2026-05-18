@@ -98,6 +98,10 @@ let filterBtn, filterOverlay, filterDrawer, filterCloseBtn, filterList;
 let cbtmTimer, cbtmStartBtn, cbtmVoteActions, cbtmWinBtn, cbtmLoseBtn, cbtmExplainBtn, cbtmExplanation, cbtmDoneBtn;
 let cbtmInterval = null;
 
+let gambleUi, gambleCurrentNumEl, gambleBankEl, gambleHigherBtn, gambleLowerBtn, gambleCashoutBtn, gambleResultText;
+let gambleCurrentValue = 5;
+let gambleScore = 0;
+
 // ══════════════════════════════════════════════
 // CREW MANIFEST — Pre-game screen
 // ══════════════════════════════════════════════
@@ -536,6 +540,14 @@ function startGame() {
   cbtmExplanation = document.getElementById('cbtm-explanation');
   cbtmDoneBtn = document.getElementById('cbtm-done-btn');
 
+  gambleUi = document.getElementById('gamble-ui');
+  gambleCurrentNumEl = document.getElementById('gamble-current-num');
+  gambleBankEl = document.getElementById('gamble-bank');
+  gambleHigherBtn = document.getElementById('gamble-higher-btn');
+  gambleLowerBtn = document.getElementById('gamble-lower-btn');
+  gambleCashoutBtn = document.getElementById('gamble-cashout-btn');
+  gambleResultText = document.getElementById('gamble-result-text');
+
   // Build deck including custom cards
   fillDeck();
 
@@ -630,6 +642,46 @@ function startGame() {
 
   cbtmWinBtn.addEventListener('click', handleContinue);
   cbtmLoseBtn.addEventListener('click', handleContinue);
+
+  const handleGamble = (guess) => {
+    let nextVal = Math.floor(Math.random() * 10) + 1;
+    while (nextVal === gambleCurrentValue) {
+      nextVal = Math.floor(Math.random() * 10) + 1;
+    }
+    const isHigher = nextVal > gambleCurrentValue;
+    const won = (guess === 'higher' && isHigher) || (guess === 'lower' && !isHigher);
+    
+    gambleCurrentValue = nextVal;
+    gambleCurrentNumEl.textContent = gambleCurrentValue;
+
+    if (won) {
+      gambleScore++;
+      gambleBankEl.textContent = gambleScore;
+      gambleResultText.textContent = `CORRECT! EVERYONE DRINKS 1!`;
+      gambleResultText.style.color = '#22c55e';
+      gambleResultText.style.display = 'block';
+    } else {
+      gambleResultText.textContent = `WRONG! YOU DRINK ${gambleScore}!`;
+      gambleResultText.style.color = '#ef4444';
+      gambleResultText.style.display = 'block';
+      gambleHigherBtn.style.display = 'none';
+      gambleLowerBtn.style.display = 'none';
+      gambleCashoutBtn.style.display = 'none';
+      mutinyContinueBtn.style.display = 'block';
+    }
+  };
+
+  gambleHigherBtn.addEventListener('click', () => handleGamble('higher'));
+  gambleLowerBtn.addEventListener('click', () => handleGamble('lower'));
+  gambleCashoutBtn.addEventListener('click', () => {
+    gambleResultText.textContent = `CASHED OUT!`;
+    gambleResultText.style.color = '#f59e0b';
+    gambleResultText.style.display = 'block';
+    gambleHigherBtn.style.display = 'none';
+    gambleLowerBtn.style.display = 'none';
+    gambleCashoutBtn.style.display = 'none';
+    mutinyContinueBtn.style.display = 'block';
+  });
 }
 
 // ══════════════════════════════════════════════
@@ -845,6 +897,8 @@ function handleSpin() {
       if (window.audioManager) window.audioManager.play('mutiny', 'card');
       drawStandardCard();
     }
+    
+    _preloadNextPlayerBackground();
   }, 1400);
 }
 
@@ -1102,7 +1156,7 @@ function drawStandardCard() {
     const groupVisualizer   = document.getElementById('group-visualizer');
 
     // Determine if this is a group/social card
-    const isGroupCard = cardObj.tags.some(t => ['social', 'callout'].includes(t));
+    const isGroupCard = cardObj.tags.some(t => ['social', 'callout', 'gamble'].includes(t));
 
     if (isGroupCard) {
       // Show Crew Compass, hide single-player avatar
@@ -1143,7 +1197,29 @@ function drawStandardCard() {
       window.UI.startAnimatedCanvases();
     }
 
-    if (cardObj.tags.includes('cbtm')) {
+    if (cardObj.tags.includes('gamble')) {
+      mutinyTitle.textContent = "HIGH-LOW GAMBLE";
+      mutinyText.style.display = 'none';
+      container.classList.add('flash-gold');
+      
+      gambleUi.style.display = 'flex';
+      gambleCurrentValue = Math.floor(Math.random() * 10) + 1;
+      gambleScore = 0;
+      gambleCurrentNumEl.textContent = gambleCurrentValue;
+      gambleBankEl.textContent = gambleScore;
+      gambleHigherBtn.style.display = 'block';
+      gambleLowerBtn.style.display = 'block';
+      gambleCashoutBtn.style.display = 'block';
+      gambleResultText.style.display = 'none';
+      
+      mutinyContinueBtn.style.display = 'none';
+      cbtmExplainBtn.style.display = 'none';
+      cbtmExplanation.style.display = 'none';
+      cbtmStartBtn.style.display = 'none';
+      cbtmTimer.style.display = 'none';
+      cbtmDoneBtn.style.display = 'none';
+      cbtmVoteActions.style.display = 'none';
+    } else if (cardObj.tags.includes('cbtm')) {
       mutinyTitle.textContent = "COULD BE THE MOVE?";
       mutinyText.style.display = 'none';
       container.classList.add('flash-purple');
@@ -1155,6 +1231,7 @@ function drawStandardCard() {
       cbtmTimer.style.display = 'none';
       cbtmDoneBtn.style.display = 'none';
       cbtmVoteActions.style.display = 'none';
+      gambleUi.style.display = 'none';
     } else {
       mutinyText.style.display = 'block';
       mutinyContinueBtn.style.display = 'block';
@@ -1164,6 +1241,7 @@ function drawStandardCard() {
       cbtmTimer.style.display = 'none';
       cbtmDoneBtn.style.display = 'none';
       cbtmVoteActions.style.display = 'none';
+      gambleUi.style.display = 'none';
     }
 
     if (navigator.vibrate) navigator.vibrate(50);
@@ -1258,6 +1336,28 @@ function _runTransition() {
   _runTransitionAfterExpiry();
 }
 
+function _preloadNextPlayerBackground() {
+  const pCount = activePlayers.length;
+  // Calculate next player AFTER potential direction flip
+  const nextIdx = (currentPlayerIndex + gameDirection + pCount) % pCount;
+  const next = activePlayers[nextIdx];
+
+  const passBgVideo = document.getElementById('pass-bg-video');
+  if (passBgVideo) {
+    if (next.active_background) {
+      const expectedSrc = `backgrounds/mutiny/${next.active_background}.webm`;
+      // Don't interrupt if it's already loading the right video
+      if (!passBgVideo.getAttribute('src') || !passBgVideo.getAttribute('src').endsWith(expectedSrc)) {
+        passBgVideo.src = expectedSrc;
+        passBgVideo.load();
+      }
+    } else {
+      passBgVideo.removeAttribute('src');
+      passBgVideo.load();
+    }
+  }
+}
+
 window._runTransitionAfterExpiry = function() {
   const transOverlay  = document.getElementById('transition-overlay');
   const passPanel     = document.getElementById('pass-panel');
@@ -1303,7 +1403,10 @@ function _showPassPanel(passPanel, passAvatarEl, passNameEl, transOverlay) {
   const passBgVideo = document.getElementById('pass-bg-video');
   if (passBgVideo) {
     if (next.active_background) {
-      passBgVideo.src = `backgrounds/mutiny/${next.active_background}.webm`;
+      const expectedSrc = `backgrounds/mutiny/${next.active_background}.webm`;
+      if (!passBgVideo.getAttribute('src') || !passBgVideo.getAttribute('src').endsWith(expectedSrc)) {
+        passBgVideo.src = expectedSrc;
+      }
       passBgVideo.style.display = 'block';
       passBgVideo.style.opacity = '.25';
       passBgVideo.play().catch(() => {});

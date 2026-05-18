@@ -74,7 +74,7 @@ window.MutinyPacks.push({
     { text: "Smell Test: {player}, you must smell every player. The best smelling player must drink.", tags: ['social', 'spicy'] },
     { text: "One Leg: {player}, stand on one leg and take a drink.", tags: ['physical'] },
     { text: "Staring Contest: {player}, have a staring competition with the person in front of you. The loser must drink.", tags: ['duel'] },
-    { text: "Shoulder Tap: {player}, turn away. {random} taps your shoulder. If you guess correctly, everyone else drinks. If you are wrong, you drink.", tags: ['social'] },
+    { text: "Shoulder Tap: {player}, turn away. Someone taps your shoulder. If you guess correctly, everyone else drinks. If you are wrong, you drink.", tags: ['social'] },
     { text: "Favourite Colour: {player}, everyone say their favourite colour. Any players that say the same colour must drink.", tags: ['social'] },
     { text: "Push Ups: {player}, do 10 push ups or take a drink.", tags: ['physical'] },
     { text: "Buddy: {player}, pick a player to drink with you.", tags: ['physical'] },
